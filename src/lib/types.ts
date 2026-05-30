@@ -32,6 +32,35 @@ export const addFoodItemsSchema = z.object({
   items: z.array(foodItemSchema).min(1),
 });
 
+/** Modificar alimentos ya presentes en el carrito (por id). */
+export const updateFoodItemsSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        id: z.string().describe("id del alimento en el carrito (ver estado del carrito)"),
+        name: z.string().optional(),
+        grams: z.number().optional(),
+        calories: z.number().optional(),
+        protein: z.number().optional(),
+        carbs: z.number().optional(),
+        fat: z.number().optional(),
+        icon: z.string().optional(),
+        note: z.string().optional(),
+      }),
+    )
+    .min(1),
+});
+
+/** Quitar alimentos del carrito (por id). */
+export const removeFoodItemsSchema = z.object({
+  ids: z.array(z.string()).min(1).describe("ids de los alimentos a quitar"),
+});
+
+/** Vaciar el carrito por completo. */
+export const clearCartSchema = z.object({
+  confirm: z.boolean().optional().describe("true para vaciar todo el carrito"),
+});
+
 /** Item tal y como vive en el carrito (con id local y editable). */
 export interface CartItem extends FoodItemInput {
   id: string;

@@ -63,10 +63,10 @@ export function MicButton({
       onClick={recording ? stop : start}
       disabled={disabled || busy}
       title={recording ? "Detener y transcribir" : "Hablar (Whisper)"}
-      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition ${
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition ${
         recording
           ? "animate-pulse bg-red-500 text-white"
-          : "bg-neutral-200 text-neutral-700 hover:bg-neutral-300 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
+          : "text-neutral-500 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-white/10"
       } disabled:opacity-50`}
     >
       {busy ? (
