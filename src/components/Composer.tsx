@@ -119,17 +119,16 @@ export function Composer({
     setImages([]);
   }
 
+  const canSend = !busy && !compressing && (text.trim() || images.length > 0);
+
   return (
-    <div className="border-t border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
-      {compressing && (
-        <p className="mb-2 text-center text-xs text-neutral-400">Comprimiendo imagen…</p>
-      )}
-      {images.length > 0 && (
-        <div className="mb-2 flex flex-wrap gap-2">
+    <div className="rounded-[26px] border border-neutral-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#2f2f2f]">
+      {(compressing || images.length > 0) && (
+        <div className="flex flex-wrap items-center gap-2 px-4 pt-3">
           {images.map((im, i) => (
             <div key={i} className="relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={im.url} alt={im.name} className="h-16 w-16 rounded-lg object-cover" />
+              <img src={im.url} alt={im.name} className="h-16 w-16 rounded-xl object-cover" />
               <button
                 type="button"
                 onClick={() => removeImage(i)}
@@ -139,15 +138,31 @@ export function Composer({
               </button>
             </div>
           ))}
+          {compressing && (
+            <span className="text-xs text-neutral-400">Comprimiendo…</span>
+          )}
         </div>
       )}
 
-      <div className="flex items-end gap-2">
-        {/* En iOS Safari, disparar un input file oculto con JS (.click()) falla.
-            Un <label> nativo abre el selector sin necesidad de JS. */}
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            submit();
+          }
+        }}
+        rows={1}
+        placeholder="Describe tu comida o adjunta fotos…"
+        className="max-h-44 w-full resize-none bg-transparent px-5 pt-4 text-base leading-6 outline-none placeholder:text-neutral-400"
+      />
+
+      <div className="flex items-center justify-between px-2.5 pb-2.5">
+        {/* <label> nativo: en iOS Safari disparar el input con .click() falla. */}
         <label
           title="Adjuntar fotos"
-          className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-neutral-200 text-neutral-700 hover:bg-neutral-300 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
+          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-white/10"
         >
           <input
             type="file"
@@ -159,44 +174,28 @@ export function Composer({
               e.target.value = "";
             }}
           />
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <circle cx="9" cy="9" r="2" />
-            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 5v14M5 12h14" />
           </svg>
         </label>
 
-        <MicButton
-          disabled={busy}
-          onTranscribed={(t) => setText((prev) => (prev ? prev + " " + t : t))}
-        />
-
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          rows={1}
-          placeholder="Tu comida o foto…"
-          className="max-h-40 min-h-11 flex-1 resize-none rounded-2xl border border-neutral-300 bg-neutral-50 px-4 py-2.5 text-base leading-6 outline-none focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-800"
-        />
-
-        <button
-          type="button"
-          onClick={submit}
-          disabled={busy || compressing || (!text.trim() && images.length === 0)}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white transition hover:bg-emerald-700 disabled:opacity-40"
-          title="Enviar"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m22 2-7 20-4-9-9-4Z" />
-            <path d="M22 2 11 13" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-1">
+          <MicButton
+            disabled={busy}
+            onTranscribed={(t) => setText((prev) => (prev ? prev + " " + t : t))}
+          />
+          <button
+            type="button"
+            onClick={submit}
+            disabled={!canSend}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900 text-white transition enabled:hover:opacity-90 disabled:opacity-30 dark:bg-white dark:text-neutral-900"
+            title="Enviar"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );
