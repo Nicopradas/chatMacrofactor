@@ -9,7 +9,6 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,8 +18,39 @@
   }
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  overscroll-behavior: none;
+}
+
+@layer base {
+  /* iOS ignora maximum-scale: esto evita el doble-tap-zoom y el delay de 300ms,
+     que hacían que los botones "no respondieran" en el móvil. */
+  button,
+  a,
+  label,
+  summary,
+  [role="button"],
+  input,
+  textarea,
+  select {
+    touch-action: manipulation;
+  }
+
+  /* Fuente >=16px en campos para que iOS NO haga zoom al enfocar. */
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
 }
