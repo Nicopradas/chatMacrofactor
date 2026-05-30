@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🍽️ Chat MacroFactor
 
-## Getting Started
+Web app personal para **estimar calorías reales a partir de fotos de comida** con IA
+(Claude) y **registrarlas en tu diario de MacroFactor** con un clic.
 
-First, run the development server:
+Flujo:
+
+1. En el chat adjuntas **una o varias fotos** y explicas el contexto en texto o **por voz**
+   (botón de micrófono → Whisper vía Groq). Ej: _"estas 3 fotos son del mismo plato, lo
+   compartí entre 3 personas"_.
+2. **Claude (visión)** identifica los alimentos, razona el tamaño de la porción usando
+   referencias visuales y estima calorías + macros.
+3. Cada alimento cae en un **carrito de calorías** que puedes **editar** (nombre, gramos, macros).
+4. Pulsas **"Completar"** y se **registra en MacroFactor**.
+
+> ⚠️ La integración con MacroFactor es **no oficial** (reverse-engineered sobre su backend
+> de Firebase/Firestore, igual que [`@sjawhar/macrofactor-mcp`](https://www.npmjs.com/package/@sjawhar/macrofactor-mcp)).
+> Puede dejar de funcionar si MacroFactor cambia su backend. Úsalo solo con tu cuenta personal.
+
+## Stack
+
+- **Next.js 16** (App Router) + **Tailwind v4**
+- **AI SDK v6** + **Claude Opus 4.8** (`@ai-sdk/anthropic`) para el chat con visión
+- **Groq Whisper** (`@ai-sdk/groq`) para transcripción de voz
+- **Zustand** para el carrito (persistido en `localStorage`)
+- Cliente directo a **Firebase Auth + Firestore** de MacroFactor (`src/lib/macrofactor.ts`)
+
+## Puesta en marcha (local)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local   # y rellena las claves
+npm install
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Variables de entorno
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Para qué |
+|---|---|
+| `ANTHROPIC_API_KEY` | Claude (chat + visión) |
+| `GROQ_API_KEY` | Whisper (transcripción de voz) |
+| `MACROFACTOR_EMAIL` / `MACROFACTOR_PASSWORD` | Tu cuenta de MacroFactor (añade contraseña en la app si entras con Google/Apple) |
+| `FIREBASE_WEB_API_KEY` | Clave web de Firebase del backend de MacroFactor |
+| `TYPESENSE_HOST` / `TYPESENSE_API_KEY` | (Opcional) búsqueda de alimentos en la BBDD de MacroFactor |
+| `APP_PASSWORD` | Contraseña para entrar a la web (protege tu cuenta en una URL pública). Vacío = app abierta |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> Las claves `FIREBASE_WEB_API_KEY` y `TYPESENSE_*` son las claves "públicas" de la app
+> MacroFactor. Consíguelas en la documentación de `@sjawhar/macrofactor-mcp` o extrayéndolas
+> del tráfico de la app. El **registro de comidas funciona sin Typesense**; este solo se usa
+> para la búsqueda de alimentos por nombre.
 
-## Learn More
+## Deploy en Vercel
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+vercel            # primer deploy (preview)
+vercel --prod     # producción
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Configura todas las variables de entorno en **Project Settings → Environment Variables**
+(o con `vercel env add`). La app es _mobile-first_: al abrir la URL en el móvil funciona como
+una web app (puedes "Añadir a pantalla de inicio").
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notas sobre la precisión
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Estimar **gramos/volumen** desde una foto 2D es el límite real de cualquier IA. Por eso el
+carrito es **editable**: Claude te da una estimación razonada (con su nivel de confianza y
+supuestos), y tú ajustas antes de registrar. Para máxima precisión, incluye en la foto una
+referencia de tamaño (cubierto, mano, envase) y cuéntale a Claude lo que sepas.
