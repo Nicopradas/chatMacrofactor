@@ -99,13 +99,33 @@ export function Composer({
 
   const [compressing, setCompressing] = useState(false);
 
+  // Cuando el usuario pulsa la flecha mientras graba: paramos, transcribimos y
+  // enviamos automáticamente. La flag dispara el envío en cuanto llega el texto.
+  const pendingSendRef = useRef(false);
+  const [autoSend, setAutoSend] = useState(false);
+
   const voice = useVoiceRecorder({
-    onTranscribed: (t) => setText((prev) => (prev ? prev + " " + t : t)),
+    onTranscribed: (t) => {
+      setText((prev) => (prev ? prev + " " + t : t));
+      if (pendingSendRef.current) {
+        pendingSendRef.current = false;
+        setAutoSend(true);
+      }
+    },
   });
 
   useLayoutEffect(() => {
     resizeTextarea(textareaRef.current);
   }, [text, images.length, compressing]);
+
+  // Una vez la transcripción está en el campo, enviamos (si venía de la flecha).
+  useEffect(() => {
+    if (!autoSend) return;
+    setAutoSend(false);
+    submit();
+    // submit() está hoisted; depende solo de la flag.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSend]);
 
   async function addFiles(files: FileList | null) {
     if (!files) return;
@@ -161,16 +181,33 @@ export function Composer({
 
         <RecordingTimer />
 
-        <button
-          type="button"
-          onClick={voice.stop}
-          title="Detener y transcribir"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white transition hover:opacity-90 dark:bg-white dark:text-neutral-900"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="6" y="6" width="12" height="12" rx="2.5" />
-          </svg>
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          {/* Stop: para y deja el texto transcrito en el campo. */}
+          <button
+            type="button"
+            onClick={voice.stop}
+            title="Detener y transcribir"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900 text-white transition hover:opacity-90 dark:bg-white dark:text-neutral-900"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" rx="2.5" />
+            </svg>
+          </button>
+          {/* Flecha: para, transcribe y envía automáticamente. */}
+          <button
+            type="button"
+            onClick={() => {
+              pendingSendRef.current = true;
+              voice.stop();
+            }}
+            title="Detener y enviar"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900 text-white transition hover:opacity-90 dark:bg-white dark:text-neutral-900"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </button>
+        </div>
       </div>
     );
   }
