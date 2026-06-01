@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { FileUIPart } from "ai";
+import { upload } from "@vercel/blob/client";
 import { useVoiceRecorder } from "./useVoiceRecorder";
 import { VoiceWaveform } from "./VoiceWaveform";
 
@@ -30,24 +31,24 @@ function base64Bytes(dataUrl: string): number {
 }
 
 /**
- * Redimensiona y recomprime una imagen en el navegador para que quepa bajo el
- * límite de 5 MB de la API (y sea más rápida). Las fotos del iPhone pesan mucho;
+ * Redimensiona y recomprime una imagen en el navegador antes de subirla a Vercel
+ * Blob (más rápida y menos almacenamiento). Las fotos del iPhone pesan mucho;
  * 1568px de lado largo es de sobra para reconocer comida.
  */
 async function compressImage(
   file: File,
-): Promise<{ url: string; name: string; mediaType: string }> {
+): Promise<{ blob: Blob; name: string; mediaType: string }> {
   const original = await readAsDataURL(file);
   let img: HTMLImageElement;
   try {
     img = await loadImage(original);
   } catch {
-    // Si el navegador no puede decodificarla, la mandamos tal cual.
-    return { url: original, name: file.name, mediaType: file.type };
+    // Si el navegador no puede decodificarla, la subimos tal cual.
+    return { blob: file, name: file.name, mediaType: file.type };
   }
 
   const MAX_DIM = 1568;
-  const MAX_BYTES = 4_500_000; // margen bajo el límite de 5 MB
+  const MAX_BYTES = 1_500_000; // suficiente para reconocer comida; subidas ligeras
   let { width, height } = img;
   const longest = Math.max(width, height);
   if (longest > MAX_DIM) {
@@ -60,7 +61,7 @@ async function compressImage(
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return { url: original, name: file.name, mediaType: file.type };
+  if (!ctx) return { blob: file, name: file.name, mediaType: file.type };
   ctx.drawImage(img, 0, 0, width, height);
 
   let quality = 0.82;
@@ -71,8 +72,9 @@ async function compressImage(
     url = canvas.toDataURL("image/jpeg", quality);
   }
 
+  const blob = await (await fetch(url)).blob();
   const name = file.name.replace(/\.[^.]+$/, "") + ".jpg";
-  return { url, name, mediaType: "image/jpeg" };
+  return { blob, name, mediaType: "image/jpeg" };
 }
 
 /** Altura máxima del campo antes de hacer scroll interno (~8–10 líneas en móvil). */
@@ -98,6 +100,7 @@ export function Composer({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [compressing, setCompressing] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Cuando el usuario pulsa la flecha mientras graba: paramos, transcribimos y
   // enviamos automáticamente. La flag dispara el envío en cuanto llega el texto.
@@ -130,13 +133,22 @@ export function Composer({
   async function addFiles(files: FileList | null) {
     if (!files) return;
     setCompressing(true);
+    setUploadError(null);
     try {
       const next: typeof images = [];
       for (const f of Array.from(files)) {
         if (!f.type.startsWith("image/")) continue;
-        next.push(await compressImage(f));
+        const { blob, name, mediaType } = await compressImage(f);
+        // Sube directamente a Vercel Blob; al chat solo viaja la URL resultante.
+        const result = await upload(`chat/${name}`, blob, {
+          access: "public",
+          handleUploadUrl: "/api/blob/upload",
+        });
+        next.push({ url: result.url, name, mediaType });
       }
       setImages((prev) => [...prev, ...next]);
+    } catch {
+      setUploadError("No se pudo subir la imagen. Inténtalo de nuevo.");
     } finally {
       setCompressing(false);
     }
@@ -229,7 +241,7 @@ export function Composer({
 
   return (
     <div className="bar-in rounded-[26px] border border-neutral-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#2f2f2f]">
-      {(compressing || images.length > 0) && (
+      {(compressing || images.length > 0 || uploadError) && (
         <div className="flex flex-wrap items-center gap-2 px-4 pt-3">
           {images.map((im, i) => (
             <div key={i} className="thumb-in relative">
@@ -245,7 +257,10 @@ export function Composer({
             </div>
           ))}
           {compressing && (
-            <span className="text-xs text-neutral-400">Comprimiendo…</span>
+            <span className="text-xs text-neutral-400">Subiendo…</span>
+          )}
+          {uploadError && !compressing && (
+            <span className="text-xs text-red-500">{uploadError}</span>
           )}
         </div>
       )}

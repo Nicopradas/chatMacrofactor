@@ -20,7 +20,16 @@ export function ChatApp() {
   const [cartOpen, setCartOpen] = useState(false);
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
 
-  const { messages, sendMessage, status, addToolResult, setMessages } = useChat({
+  const {
+    messages,
+    sendMessage,
+    status,
+    addToolResult,
+    setMessages,
+    error,
+    clearError,
+    regenerate,
+  } = useChat({
     // Render casi por cada palabra (smoothStream ya las pacea a ~19ms en el server).
     experimental_throttle: 16,
     transport: new DefaultChatTransport({
@@ -100,6 +109,16 @@ export function ChatApp() {
         <MessageList messages={messages} thinking={status === "submitted"} />
 
         <div className="mx-auto w-full max-w-3xl shrink-0 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          {error && (
+            <ErrorBanner
+              error={error}
+              onDismiss={clearError}
+              onRetry={() => {
+                clearError();
+                regenerate();
+              }}
+            />
+          )}
           <Composer onSend={handleSend} busy={busy} />
           <p className="mt-1.5 text-center text-[11px] text-neutral-400">
             Claude puede equivocarse al estimar porciones. Revisa el carrito antes de
@@ -163,6 +182,78 @@ function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: ()
         onClick={(e) => e.stopPropagation()}
         className="lb-pop max-h-full max-w-full rounded-lg object-contain"
       />
+    </div>
+  );
+}
+
+/** Traduce el error técnico a un mensaje útil para el usuario. */
+function friendlyError(error: Error): string {
+  const msg = (error.message || "").toLowerCase();
+  if (
+    msg.includes("413") ||
+    msg.includes("payload too large") ||
+    msg.includes("request entity too large") ||
+    msg.includes("body size")
+  ) {
+    return "El mensaje pesa demasiado, normalmente por adjuntar muchas fotos a la vez. Prueba a enviar menos imágenes por mensaje.";
+  }
+  if (msg.includes("timeout") || msg.includes("504") || msg.includes("aborted")) {
+    return "La respuesta tardó demasiado y se cortó. Inténtalo de nuevo, quizá con menos fotos.";
+  }
+  if (msg.includes("429") || msg.includes("rate limit")) {
+    return "Demasiadas peticiones seguidas. Espera unos segundos y reintenta.";
+  }
+  if (msg.includes("failed to fetch") || msg.includes("network")) {
+    return "No se pudo conectar con el servidor. Revisa tu conexión y reintenta.";
+  }
+  return "Algo falló al procesar tu mensaje. Inténtalo de nuevo.";
+}
+
+/** Banner de error sobre el composer, con descartar y reintentar. */
+function ErrorBanner({
+  error,
+  onDismiss,
+  onRetry,
+}: {
+  error: Error;
+  onDismiss: () => void;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="bar-in mb-2 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
+      <svg
+        className="mt-0.5 h-5 w-5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <p className="min-w-0 flex-1 leading-snug">{friendlyError(error)}</p>
+      <div className="flex shrink-0 items-center gap-1">
+        <button
+          type="button"
+          onClick={onRetry}
+          className="rounded-full px-2.5 py-1 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-500/20"
+        >
+          Reintentar
+        </button>
+        <button
+          type="button"
+          onClick={onDismiss}
+          title="Descartar"
+          className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-red-100 dark:hover:bg-red-500/20"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

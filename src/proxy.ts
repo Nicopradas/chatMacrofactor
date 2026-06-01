@@ -7,7 +7,13 @@ export async function proxy(req: NextRequest) {
   if (!expected) return NextResponse.next();
 
   const { pathname } = req.nextUrl;
-  if (pathname === "/login" || pathname === "/api/login") {
+  // /api/blob/upload recibe el callback server-to-server de Vercel Blob (sin
+  // cookie); la autorización del usuario se valida dentro del propio endpoint.
+  if (
+    pathname === "/login" ||
+    pathname === "/api/login" ||
+    pathname === "/api/blob/upload"
+  ) {
     return NextResponse.next();
   }
 
