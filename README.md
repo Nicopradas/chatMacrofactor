@@ -67,10 +67,24 @@ vercel            # first deploy (preview)
 vercel --prod     # production
 ```
 
-Set the variables in **Project Settings → Environment Variables** (or `vercel env add`). The app is
-_mobile-first_: open the URL on your phone and "Add to Home Screen" to use it like a native app.
+Set the variables in **Project Settings → Environment Variables** (or `vercel env add`).
 
 > Recommended: set an `APP_PASSWORD` if your URL is public, so only you can get in.
+
+### Add to Home Screen (iPhone)
+
+Once deployed, pin the app to your home screen so it's always one tap away — full-screen, like a
+native app.
+
+1. On your iPhone, open your **production URL** in **Safari** (e.g. `https://your-app.vercel.app`).
+   Use Safari, not Chrome — _Add to Home Screen_ only works from Safari.
+2. Tap the **Share** button (square with an arrow pointing up).
+3. Scroll the share sheet and tap **Add to Home Screen**.
+4. Confirm the name (defaults to **Chat MacroFactor**) and tap **Add**.
+
+The icon shows up on your home screen. Opening it launches the app without Safari's address bar.
+Your cart stays saved in `localStorage` between sessions. If you set `APP_PASSWORD`, log in once —
+Safari will remember the session on that device.
 
 ## Stack
 
