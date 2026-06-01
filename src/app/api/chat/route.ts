@@ -73,11 +73,48 @@ export async function POST(req: Request) {
     cart,
   }: { messages: UIMessage[]; cart?: CartItem[] } = await req.json();
 
+  const modelMessages = await convertToModelMessages(messages);
+
+  // El estado del carrito es VOLÁTIL (cambia casi cada turno), así que no puede ir
+  // en el system prompt: invalidaría toda la caché. Lo inyectamos al final, en el
+  // último mensaje del usuario, por detrás del punto de caché.
+  const last = modelMessages.at(-1);
+  if (last?.role === "user") {
+    const cartText = cartContext(cart);
+    if (typeof last.content === "string") {
+      last.content = [
+        { type: "text", text: last.content },
+        { type: "text", text: cartText },
+      ];
+    } else {
+      last.content.push({ type: "text", text: cartText });
+    }
+  }
+
+  // Punto de caché "rodante": marcamos el último mensaje del turno ANTERIOR. Así
+  // todo el prefijo estable (system + historial + fotos previas) se reutiliza ~5
+  // min y solo el mensaje nuevo se procesa entero. Anthropic cachea desde el
+  // principio hasta este breakpoint (mín. 4096 tokens en Opus, si no, no cachea).
+  const cachePoint = modelMessages.at(-2);
+  if (cachePoint) {
+    cachePoint.providerOptions = {
+      ...cachePoint.providerOptions,
+      anthropic: { cacheControl: { type: "ephemeral" } },
+    };
+  }
+
   const result = streamText({
     model: anthropic("claude-opus-4-8"),
-    system: BASE_PROMPT + cartContext(cart),
-    messages: await convertToModelMessages(messages),
+    system: BASE_PROMPT,
+    messages: modelMessages,
     stopWhen: stepCountIs(5),
+    onFinish: ({ providerMetadata }) => {
+      // Para verificar el ahorro en `vercel logs`: tokens creados vs. leídos de caché.
+      const a = providerMetadata?.anthropic as
+        | { usage?: Record<string, unknown> }
+        | undefined;
+      if (a?.usage) console.log("[/api/chat] anthropic usage:", a.usage);
+    },
     experimental_transform: smoothStream({ delayInMs: 18, chunking: "word" }),
     tools: {
       add_food_items: tool({
