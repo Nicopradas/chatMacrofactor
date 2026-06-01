@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { FileUIPart } from "ai";
 import { MicButton } from "./MicButton";
 
@@ -74,6 +74,17 @@ async function compressImage(
   return { url, name, mediaType: "image/jpeg" };
 }
 
+/** Altura máxima del campo antes de hacer scroll interno (~8–10 líneas en móvil). */
+const TEXTAREA_MAX_PX = 220;
+
+function resizeTextarea(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  el.style.height = "0px";
+  const h = Math.min(el.scrollHeight, TEXTAREA_MAX_PX);
+  el.style.height = `${h}px`;
+  el.style.overflowY = el.scrollHeight > TEXTAREA_MAX_PX ? "auto" : "hidden";
+}
+
 export function Composer({
   onSend,
   busy,
@@ -83,8 +94,13 @@ export function Composer({
 }) {
   const [text, setText] = useState("");
   const [images, setImages] = useState<{ url: string; name: string; mediaType: string }[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [compressing, setCompressing] = useState(false);
+
+  useLayoutEffect(() => {
+    resizeTextarea(textareaRef.current);
+  }, [text, images.length, compressing]);
 
   async function addFiles(files: FileList | null) {
     if (!files) return;
@@ -117,6 +133,7 @@ export function Composer({
     onSend(text.trim(), parts);
     setText("");
     setImages([]);
+    requestAnimationFrame(() => resizeTextarea(textareaRef.current));
   }
 
   const canSend = !busy && !compressing && (text.trim() || images.length > 0);
@@ -145,8 +162,15 @@ export function Composer({
       )}
 
       <textarea
+        ref={textareaRef}
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => {
+          setText(e.target.value);
+          const el = e.currentTarget;
+          requestAnimationFrame(() => {
+            if (el.scrollHeight > TEXTAREA_MAX_PX) el.scrollTop = el.scrollHeight;
+          });
+        }}
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -155,7 +179,9 @@ export function Composer({
         }}
         rows={1}
         placeholder="Describe tu comida o adjunta fotos…"
-        className="max-h-44 w-full resize-none bg-transparent px-5 pt-4 text-base leading-6 outline-none placeholder:text-neutral-400"
+        aria-label="Mensaje"
+        className="min-h-[2.75rem] w-full resize-none overflow-y-auto bg-transparent px-5 pt-4 pb-1 text-base leading-6 outline-none placeholder:text-neutral-400 [-webkit-overflow-scrolling:touch]"
+        style={{ maxHeight: TEXTAREA_MAX_PX }}
       />
 
       <div className="flex items-center justify-between px-2.5 pb-2.5">

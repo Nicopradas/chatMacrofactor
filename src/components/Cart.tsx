@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { cartTotals, useCart } from "@/lib/cart-store";
 import { cartToMacroFactorJson } from "@/lib/macrofactor-json";
 import { mfIconEmoji } from "@/lib/mf-icon-emoji";
@@ -113,6 +113,43 @@ function CartRow({
   onChange: (patch: Partial<CartItem>) => void;
   onRemove: () => void;
 }) {
+  // Baseline al empezar a editar gramos, para escalar kcal/macros sin compounding.
+  const baseRef = useRef<{
+    grams: number;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  } | null>(null);
+
+  function onGramsFocus() {
+    baseRef.current = {
+      grams: item.grams || 0,
+      calories: item.calories || 0,
+      protein: item.protein || 0,
+      carbs: item.carbs || 0,
+      fat: item.fat || 0,
+    };
+  }
+
+  function onGramsChange(v: string) {
+    const g = Number(v) || 0;
+    const b = baseRef.current;
+    // Si hay peso de referencia, escala los macros proporcionalmente.
+    if (b && b.grams > 0 && g > 0) {
+      const r = g / b.grams;
+      onChange({
+        grams: g,
+        calories: Math.round(b.calories * r),
+        protein: Math.round(b.protein * r),
+        carbs: Math.round(b.carbs * r),
+        fat: Math.round(b.fat * r),
+      });
+    } else {
+      onChange({ grams: g });
+    }
+  }
+
   return (
     <div className="rounded-2xl bg-neutral-50 p-3.5 dark:bg-white/[0.04]">
       <div className="flex items-start justify-between gap-2">
@@ -142,7 +179,7 @@ function CartRow({
         </p>
       )}
       <div className="mt-2.5 grid grid-cols-5 gap-1">
-        <Field label="g" value={num(item.grams)} onChange={(v) => onChange({ grams: Number(v) || 0 })} />
+        <Field label="g" value={num(item.grams)} onChange={onGramsChange} onFocus={onGramsFocus} />
         <Field label="kcal" value={num(item.calories)} onChange={(v) => onChange({ calories: Number(v) || 0 })} />
         <Field label="P" value={num(item.protein)} onChange={(v) => onChange({ protein: Number(v) || 0 })} />
         <Field label="C" value={num(item.carbs)} onChange={(v) => onChange({ carbs: Number(v) || 0 })} />
@@ -156,16 +193,19 @@ function Field({
   label,
   value,
   onChange,
+  onFocus,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  onFocus?: () => void;
 }) {
   return (
     <label className="flex flex-col items-center">
       <input
         inputMode="numeric"
         value={value}
+        onFocus={onFocus}
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-lg bg-white px-1 py-1.5 text-center text-[15px] font-medium outline-none ring-1 ring-transparent transition focus:ring-neutral-300 dark:bg-white/[0.06] dark:focus:ring-white/20"
       />
