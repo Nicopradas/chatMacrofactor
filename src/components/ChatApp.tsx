@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type FileUIPart } from "ai";
 import ReactMarkdown from "react-markdown";
@@ -12,9 +12,13 @@ import { Cart } from "./Cart";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+/** Abre una imagen a pantalla completa. Lo proveen ChatApp y consume cada <img>. */
+const LightboxContext = createContext<(src: string, alt?: string) => void>(() => {});
+
 export function ChatApp() {
   const cartCount = useCart((s) => s.items.length);
   const [cartOpen, setCartOpen] = useState(false);
+  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
 
   const { messages, sendMessage, status, addToolResult, setMessages } = useChat({
     // Render casi por cada palabra (smoothStream ya las pacea a ~19ms en el server).
@@ -65,6 +69,7 @@ export function ChatApp() {
   }
 
   return (
+    <LightboxContext.Provider value={(src, alt) => setLightbox({ src, alt: alt ?? "imagen" })}>
     <div className="flex h-[100dvh] w-full overflow-hidden bg-white text-neutral-900 dark:bg-[#212121] dark:text-neutral-100">
       {/* Columna del chat */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -117,6 +122,47 @@ export function ChatApp() {
           </div>
         </div>
       )}
+
+      {lightbox && (
+        <Lightbox {...lightbox} onClose={() => setLightbox(null)} />
+      )}
+    </div>
+    </LightboxContext.Provider>
+  );
+}
+
+/** Visor a pantalla completa: clic fuera o Escape para cerrar. */
+function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        title="Cerrar"
+        className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-full max-w-full rounded-lg object-contain"
+      />
     </div>
   );
 }
@@ -191,15 +237,7 @@ function renderPart(part: any, i: number, isUser: boolean) {
     return <Markdown key={i} text={part.text} />;
   }
   if (part.type === "file" && part.mediaType?.startsWith("image/")) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        key={i}
-        src={part.url}
-        alt={part.filename ?? "imagen"}
-        className="max-h-60 rounded-xl object-cover"
-      />
-    );
+    return <ChatImage key={i} src={part.url} alt={part.filename ?? "imagen"} />;
   }
   if (typeof part.type === "string" && part.type.startsWith("tool-") && !isUser) {
     const label = toolChipLabel(part);
@@ -214,6 +252,20 @@ function renderPart(part: any, i: number, isUser: boolean) {
     );
   }
   return null;
+}
+
+/** Miniatura del chat: clic para abrirla en el lightbox. */
+function ChatImage({ src, alt }: { src: string; alt: string }) {
+  const openLightbox = useContext(LightboxContext);
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt}
+      onClick={() => openLightbox(src, alt)}
+      className="max-h-60 cursor-zoom-in rounded-xl object-cover transition hover:opacity-90"
+    />
+  );
 }
 
 function toolChipLabel(part: any): string | null {
