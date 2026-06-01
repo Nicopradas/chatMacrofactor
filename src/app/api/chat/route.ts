@@ -61,7 +61,7 @@ function cartContext(cart: CartItem[] | undefined): string {
           i.protein,
         )}/C${Math.round(i.carbs)}/G${Math.round(i.fat)}${
           i.grams ? ` · ${Math.round(i.grams)}g` : ""
-        }`,
+        }${i.note ? ` · nota: ${i.note}` : ""}`,
     )
     .join("\n");
   return `\n\nESTADO DEL CARRITO (usa estos id para update_food_items / remove_food_items):\n${lines}`;
