@@ -1,68 +1,93 @@
 # 🍽️ Chat MacroFactor
 
-Web app personal para **estimar calorías reales a partir de fotos de comida** con IA
-(Claude) y **registrarlas en tu diario de MacroFactor** con un clic.
+Estimate the **real calories and macros of your meals from photos** with AI (Claude) and
+**log them to your MacroFactor diary** in one tap, from your phone or computer.
 
-Flujo:
+This is a **self-hosted** web app: you deploy it with **your own Claude API key** and log to
+MacroFactor through an **Apple Shortcut** (bundled in this repo). There's no central server and no
+accounts — your keys and your data stay yours.
 
-1. En el chat adjuntas **una o varias fotos** y explicas el contexto en texto o **por voz**
-   (botón de micrófono → Whisper vía Groq). Ej: _"estas 3 fotos son del mismo plato, lo
-   compartí entre 3 personas"_.
-2. **Claude (visión)** identifica los alimentos, razona el tamaño de la porción usando
-   referencias visuales y estima calorías + macros.
-3. Cada alimento cae en un **carrito de calorías** que puedes **editar** (nombre, gramos, macros).
-4. Pulsas **"Completar"** y se **registra en MacroFactor**.
+## How it works
 
-> ⚠️ La integración con MacroFactor es **no oficial** (reverse-engineered sobre su backend
-> de Firebase/Firestore, igual que [`@sjawhar/macrofactor-mcp`](https://www.npmjs.com/package/@sjawhar/macrofactor-mcp)).
-> Puede dejar de funcionar si MacroFactor cambia su backend. Úsalo solo con tu cuenta personal.
+1. In the chat you attach **one or more photos** and add context by text or **voice**. E.g.
+   _"these 3 photos are the same dish, I split it between 3 people"_.
+2. **Claude (vision)** identifies the foods, reasons about portion size using visual references, and
+   estimates **calories + macros**.
+3. Each food lands in an editable **cart** (name, grams, macros).
+4. You hit **"Complete"** and the app opens the **Apple Shortcut**, which logs everything to
+   MacroFactor using its official _"Log by JSON"_ action. Confirm in Shortcuts and you're done.
 
-## Stack
+> Logging happens **on your device** via the shortcut (your MacroFactor credentials are never sent
+> to any server). You need the **MacroFactor** app installed, since it's what provides the
+> _"Log by JSON"_ action to the Shortcuts app.
 
-- **Next.js 16** (App Router) + **Tailwind v4**
-- **AI SDK v6** + **Claude Opus 4.8** (`@ai-sdk/anthropic`) para el chat con visión
-- **Groq Whisper** (`@ai-sdk/groq`) para transcripción de voz
-- **Zustand** para el carrito (persistido en `localStorage`)
-- Cliente directo a **Firebase Auth + Firestore** de MacroFactor (`src/lib/macrofactor.ts`)
+## Requirements
 
-## Puesta en marcha (local)
+- An **Anthropic (Claude) API key** — required. Get one at
+  [console.anthropic.com](https://console.anthropic.com/). API usage is billed to your account.
+- An **iPhone or Mac** with the **Shortcuts** app and the **MacroFactor** app (for logging).
+- _(Optional)_ A **Groq API key** to transcribe voice with Whisper:
+  [console.groq.com/keys](https://console.groq.com/keys).
+
+## Getting started (local)
 
 ```bash
-cp .env.example .env.local   # y rellena las claves
+cp .env.example .env.local   # fill in at least ANTHROPIC_API_KEY
 npm install
 npm run dev                  # http://localhost:3000
 ```
 
-### Variables de entorno
+### Environment variables
 
-| Variable | Para qué |
-|---|---|
-| `ANTHROPIC_API_KEY` | Claude (chat + visión) |
-| `GROQ_API_KEY` | Whisper (transcripción de voz) |
-| `MACROFACTOR_EMAIL` / `MACROFACTOR_PASSWORD` | Tu cuenta de MacroFactor (añade contraseña en la app si entras con Google/Apple) |
-| `FIREBASE_WEB_API_KEY` | Clave web de Firebase del backend de MacroFactor |
-| `TYPESENSE_HOST` / `TYPESENSE_API_KEY` | (Opcional) búsqueda de alimentos en la BBDD de MacroFactor |
-| `APP_PASSWORD` | Contraseña para entrar a la web (protege tu cuenta en una URL pública). Vacío = app abierta |
+| Variable | Required | What for |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | ✅ | Claude (chat + vision). Your Anthropic key. |
+| `GROQ_API_KEY` | — | Whisper, to talk instead of type. Without it, the voice button is disabled. |
+| `APP_PASSWORD` | — | Password to access the web app (set it if you host it on a public URL). Empty = open. |
+| `NEXT_PUBLIC_MF_SHORTCUT_NAME` | — | Name of the shortcut to invoke. Only if you rename it (defaults to `Log Chat MacroFactor`). |
 
-> Las claves `FIREBASE_WEB_API_KEY` y `TYPESENSE_*` son las claves "públicas" de la app
-> MacroFactor. Consíguelas en la documentación de `@sjawhar/macrofactor-mcp` o extrayéndolas
-> del tráfico de la app. El **registro de comidas funciona sin Typesense**; este solo se usa
-> para la búsqueda de alimentos por nombre.
+## Install the Apple Shortcut
 
-## Deploy en Vercel
+Logging to MacroFactor is done by a shortcut bundled in this repo:
+[`shortcut/Log Chat MacroFactor.shortcut`](shortcut/Log%20Chat%20MacroFactor.shortcut).
+
+1. Make sure the **MacroFactor** and **Shortcuts** apps are installed on your iPhone/Mac.
+2. Open `shortcut/Log Chat MacroFactor.shortcut` (double-click, or open it on your phone). It's
+   **signed**, so it imports directly without having to allow "untrusted shortcuts".
+3. Add it in Shortcuts. **Keep the name** exactly **`Log Chat MacroFactor`**, since that's the name
+   the web app invokes.
+   - If you prefer a different name, set it in `NEXT_PUBLIC_MF_SHORTCUT_NAME`.
+4. In the web app, hit **"Complete"** in the cart: Shortcuts opens with your foods preloaded —
+   confirm it and MacroFactor logs them.
+
+## Deploy on Vercel
 
 ```bash
-vercel            # primer deploy (preview)
-vercel --prod     # producción
+vercel            # first deploy (preview)
+vercel --prod     # production
 ```
 
-Configura todas las variables de entorno en **Project Settings → Environment Variables**
-(o con `vercel env add`). La app es _mobile-first_: al abrir la URL en el móvil funciona como
-una web app (puedes "Añadir a pantalla de inicio").
+Set the variables in **Project Settings → Environment Variables** (or `vercel env add`). The app is
+_mobile-first_: open the URL on your phone and "Add to Home Screen" to use it like a native app.
 
-## Notas sobre la precisión
+> Recommended: set an `APP_PASSWORD` if your URL is public, so only you can get in.
 
-Estimar **gramos/volumen** desde una foto 2D es el límite real de cualquier IA. Por eso el
-carrito es **editable**: Claude te da una estimación razonada (con su nivel de confianza y
-supuestos), y tú ajustas antes de registrar. Para máxima precisión, incluye en la foto una
-referencia de tamaño (cubierto, mano, envase) y cuéntale a Claude lo que sepas.
+## Stack
+
+- **Next.js 16** (App Router) + **Tailwind v4**
+- **AI SDK v6** + **Claude Opus 4.8** (`@ai-sdk/anthropic`) for the vision chat
+- **Groq Whisper** (`@ai-sdk/groq`) for voice transcription (optional)
+- **Zustand** for the cart (persisted in `localStorage`)
+- **Apple Shortcuts** + MacroFactor's official _"Log by JSON"_ action for logging
+
+## A note on accuracy
+
+Estimating **grams/volume** from a 2D photo is the real limit of any AI. That's why the cart is
+**editable**: Claude gives you a reasoned estimate (with its confidence level and assumptions) and
+you adjust before logging. For best results, include a size reference in the photo (utensil, hand,
+container) and tell Claude whatever you know.
+
+---
+
+Personal project, not affiliated with MacroFactor or Anthropic. Use at your own risk.
+</content>
