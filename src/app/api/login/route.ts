@@ -10,13 +10,13 @@ export async function POST(req: Request) {
   try {
     password = (await req.json()).password ?? "";
   } catch {
-    return Response.json({ error: "Petición inválida" }, { status: 400 });
+    return Response.json({ error: "Invalid request" }, { status: 400 });
   }
 
   const { sha256hex } = await import("@/lib/auth");
   const token = await sha256hex(`${password}:chat-macrofactor`);
   if (token !== expected) {
-    return Response.json({ error: "Contraseña incorrecta" }, { status: 401 });
+    return Response.json({ error: "Incorrect password" }, { status: 401 });
   }
 
   const res = Response.json({ ok: true });

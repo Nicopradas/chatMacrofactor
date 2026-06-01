@@ -1,29 +1,29 @@
 import { z } from "zod";
 
-/** Esquema que Claude rellena por cada alimento detectado. */
+/** Schema Claude fills in for each detected food item. */
 export const foodItemSchema = z.object({
-  name: z.string().describe("Nombre del alimento, ej. 'Pechuga de pollo a la plancha'"),
+  name: z.string().describe("Food name, e.g. 'Grilled chicken breast'"),
   grams: z
     .number()
-    .describe("Peso/porción estimada en gramos")
+    .describe("Estimated portion weight in grams")
     .optional(),
-  calories: z.number().describe("Calorías totales estimadas (kcal) para la porción"),
-  protein: z.number().describe("Proteína total en gramos"),
-  carbs: z.number().describe("Carbohidratos totales en gramos"),
-  fat: z.number().describe("Grasa total en gramos"),
+  calories: z.number().describe("Total estimated calories (kcal) for the portion"),
+  protein: z.number().describe("Total protein in grams"),
+  carbs: z.number().describe("Total carbohydrates in grams"),
+  fat: z.number().describe("Total fat in grams"),
   confidence: z
-    .enum(["alta", "media", "baja"])
-    .describe("Confianza en la estimación de la porción"),
+    .enum(["high", "medium", "low"])
+    .describe("Confidence in the portion estimate"),
   icon: z
     .string()
     .optional()
     .describe(
-      "Icono de MacroFactor que mejor representa este alimento (de la lista proporcionada). Si dudas, 'foodDefault'.",
+      "MacroFactor icon that best represents this food (from the provided list). If unsure, use 'foodDefault'.",
     ),
   note: z
     .string()
     .optional()
-    .describe("Nota breve: en qué te basaste para la porción, supuestos, etc."),
+    .describe("Brief note: what you based the portion on, assumptions, etc."),
 });
 
 export type FoodItemInput = z.infer<typeof foodItemSchema>;
@@ -32,12 +32,12 @@ export const addFoodItemsSchema = z.object({
   items: z.array(foodItemSchema).min(1),
 });
 
-/** Modificar alimentos ya presentes en el carrito (por id). */
+/** Modify foods already in the cart (by id). */
 export const updateFoodItemsSchema = z.object({
   items: z
     .array(
       z.object({
-        id: z.string().describe("id del alimento en el carrito (ver estado del carrito)"),
+        id: z.string().describe("Food id in the cart (see cart state)"),
         name: z.string().optional(),
         grams: z.number().optional(),
         calories: z.number().optional(),
@@ -51,22 +51,22 @@ export const updateFoodItemsSchema = z.object({
     .min(1),
 });
 
-/** Quitar alimentos del carrito (por id). */
+/** Remove foods from the cart (by id). */
 export const removeFoodItemsSchema = z.object({
-  ids: z.array(z.string()).min(1).describe("ids de los alimentos a quitar"),
+  ids: z.array(z.string()).min(1).describe("Ids of foods to remove"),
 });
 
-/** Vaciar el carrito por completo. */
+/** Empty the cart completely. */
 export const clearCartSchema = z.object({
-  confirm: z.boolean().optional().describe("true para vaciar todo el carrito"),
+  confirm: z.boolean().optional().describe("true to clear the entire cart"),
 });
 
-/** Item tal y como vive en el carrito (con id local y editable). */
+/** Item as stored in the cart (with local id, editable). */
 export interface CartItem extends FoodItemInput {
   id: string;
 }
 
-/** Tipado de las tools UI para el stream del chat. */
+/** UI tool typing for the chat stream. */
 export type ChatTools = {
   add_food_items: {
     input: z.infer<typeof addFoodItemsSchema>;

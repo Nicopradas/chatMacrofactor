@@ -184,7 +184,7 @@ export function Composer({
         <button
           type="button"
           onClick={voice.cancel}
-          title="Cancelar"
+          title="Cancel"
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-white/10"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -201,7 +201,7 @@ export function Composer({
           <button
             type="button"
             onClick={voice.stop}
-            title="Detener y transcribir"
+            title="Stop and transcribe"
             className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900 text-white transition hover:opacity-90 dark:bg-white dark:text-neutral-900"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -215,7 +215,7 @@ export function Composer({
               pendingSendRef.current = true;
               voice.stop();
             }}
-            title="Detener y enviar"
+            title="Stop and send"
             className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900 text-white transition hover:opacity-90 dark:bg-white dark:text-neutral-900"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -245,7 +245,7 @@ export function Composer({
             </div>
           ))}
           {compressing && (
-            <span className="text-xs text-neutral-400">Comprimiendo…</span>
+            <span className="text-xs text-neutral-400">Compressing…</span>
           )}
         </div>
       )}
@@ -268,8 +268,8 @@ export function Composer({
         }}
         onPaste={handlePaste}
         rows={1}
-        placeholder="Describe tu comida o adjunta fotos…"
-        aria-label="Mensaje"
+        placeholder="Describe your meal or attach photos…"
+        aria-label="Message"
         className="min-h-[2.75rem] w-full resize-none overflow-y-auto bg-transparent px-5 pt-4 pb-1 text-base leading-6 outline-none placeholder:text-neutral-400 [-webkit-overflow-scrolling:touch]"
         style={{ maxHeight: TEXTAREA_MAX_PX }}
       />
@@ -277,7 +277,7 @@ export function Composer({
       <div className="flex items-center justify-between px-2.5 pb-2.5">
         {/* <label> nativo: en iOS Safari disparar el input con .click() falla. */}
         <label
-          title="Adjuntar fotos"
+          title="Attach photos"
           className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-white/10"
         >
           <input
@@ -300,7 +300,7 @@ export function Composer({
             type="button"
             onClick={voice.start}
             disabled={busy || voice.busy}
-            title="Hablar (Whisper)"
+            title="Speak (Whisper)"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-500 transition hover:bg-neutral-100 disabled:opacity-50 dark:text-neutral-300 dark:hover:bg-white/10"
           >
             {voice.busy ? (
@@ -321,7 +321,7 @@ export function Composer({
             onClick={submit}
             disabled={!canSend}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900 text-white transition enabled:hover:opacity-90 disabled:opacity-30 dark:bg-white dark:text-neutral-900"
-            title="Enviar"
+            title="Send"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 19V5M5 12l7-7 7 7" />

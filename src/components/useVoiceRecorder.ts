@@ -33,9 +33,9 @@ export function useVoiceRecorder({
         const res = await fetch("/api/transcribe", { method: "POST", body: form });
         const data = await res.json();
         if (data.text) onTranscribed(data.text as string);
-        else alert(data.error ?? "No se pudo transcribir el audio");
+        else alert(data.error ?? "Could not transcribe audio");
       } catch {
-        alert("Error transcribiendo el audio");
+        alert("Error transcribing audio");
       } finally {
         setBusy(false);
       }
@@ -80,7 +80,7 @@ export function useVoiceRecorder({
       recorderRef.current = recorder;
       setRecording(true);
     } catch {
-      alert("No se pudo acceder al micrófono. Revisa los permisos.");
+      alert("Could not access the microphone. Check your permissions.");
     }
   }, [transcribe]);
 

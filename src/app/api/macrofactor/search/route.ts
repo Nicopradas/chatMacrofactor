@@ -12,7 +12,7 @@ export async function GET(req: Request) {
     return Response.json({ hits });
   } catch (err) {
     return Response.json(
-      { error: err instanceof Error ? err.message : "Error buscando alimentos" },
+      { error: err instanceof Error ? err.message : "Error searching foods" },
       { status: 500 },
     );
   }

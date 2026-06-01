@@ -65,11 +65,11 @@ export function ChatApp() {
   const busy = status === "submitted" || status === "streaming";
 
   function handleSend(text: string, images: FileUIPart[]) {
-    sendMessage({ text: text || "(ver imágenes)", files: images });
+    sendMessage({ text: text || "(see images)", files: images });
   }
 
   return (
-    <LightboxContext.Provider value={(src, alt) => setLightbox({ src, alt: alt ?? "imagen" })}>
+    <LightboxContext.Provider value={(src, alt) => setLightbox({ src, alt: alt ?? "image" })}>
     <div className="flex h-[100dvh] w-full overflow-hidden bg-white text-neutral-900 dark:bg-[#212121] dark:text-neutral-100">
       {/* Columna del chat */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -79,15 +79,15 @@ export function ChatApp() {
             <button
               onClick={() => setMessages([])}
               className="rounded-full px-3 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-white/10"
-              title="Nuevo chat"
+              title="New chat"
             >
-              Nuevo
+              New
             </button>
             <button
               onClick={() => setCartOpen(true)}
               className="relative rounded-full bg-neutral-900 px-3.5 py-1.5 text-sm font-medium text-white dark:bg-white dark:text-neutral-900 lg:hidden"
             >
-              Carrito
+              Cart
               {cartCount > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-xs text-white">
                   {cartCount}
@@ -102,8 +102,7 @@ export function ChatApp() {
         <div className="mx-auto w-full max-w-3xl shrink-0 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <Composer onSend={handleSend} busy={busy} />
           <p className="mt-1.5 text-center text-[11px] text-neutral-400">
-            Claude puede equivocarse al estimar porciones. Revisa el carrito antes de
-            registrar.
+            Claude may misestimate portions. Review the cart before logging.
           </p>
         </div>
       </div>
@@ -149,7 +148,7 @@ function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: ()
       <button
         type="button"
         onClick={onClose}
-        title="Cerrar"
+        title="Close"
         className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -176,11 +175,11 @@ function MessageList({ messages, thinking }: { messages: UIMsg[]; thinking: bool
         {messages.length === 0 ? (
           <div className="mx-auto mt-[15vh] max-w-md text-center">
             <p className="mb-3 text-4xl">🍽️</p>
-            <h2 className="text-lg font-semibold">¿Qué has comido?</h2>
+            <h2 className="text-lg font-semibold">What did you eat?</h2>
             <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-              Manda fotos de tu comida y explícame el contexto. Lo estimo, lo añado al
-              carrito y lo registras en MacroFactor. También puedes pedirme que ajuste o
-              quite alimentos del carrito.
+              Send food photos and explain the context. I&apos;ll estimate, add items to
+              the cart, and you log them in MacroFactor. You can also ask me to adjust or
+              remove foods from the cart.
             </p>
           </div>
         ) : (
@@ -233,7 +232,7 @@ function renderPart(part: any, i: number, isUser: boolean) {
     return <Markdown key={i} text={part.text} />;
   }
   if (part.type === "file" && part.mediaType?.startsWith("image/")) {
-    return <ChatImage key={i} src={part.url} alt={part.filename ?? "imagen"} />;
+    return <ChatImage key={i} src={part.url} alt={part.filename ?? "image"} />;
   }
   if (typeof part.type === "string" && part.type.startsWith("tool-") && !isUser) {
     const label = toolChipLabel(part);
@@ -271,14 +270,14 @@ function toolChipLabel(part: any): string | null {
       const names = (input.items ?? [])
         .map((it: any) => `${mfIconEmoji(it.icon)} ${it.name}`)
         .join("  ");
-      return names ? `Añadido: ${names}` : null;
+      return names ? `Added: ${names}` : null;
     }
     case "tool-update_food_items":
-      return `✏️ Actualizado ${input.items?.length ?? ""} alimento(s)`;
+      return `✏️ Updated ${input.items?.length ?? ""} item(s)`;
     case "tool-remove_food_items":
-      return `🗑️ Quitado ${input.ids?.length ?? ""} alimento(s)`;
+      return `🗑️ Removed ${input.ids?.length ?? ""} item(s)`;
     case "tool-clear_cart":
-      return "🧹 Carrito vaciado";
+      return "🧹 Cart cleared";
     default:
       return null;
   }

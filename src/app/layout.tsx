@@ -9,7 +9,7 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: "Chat MacroFactor",
-  description: "Estima calorías de fotos de comida con IA y regístralas en MacroFactor",
+  description: "Estimate calories from food photos with AI and log them to MacroFactor",
   appleWebApp: { capable: true, title: "Chat MacroFactor", statusBarStyle: "black-translucent" },
 };
 
@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${geistSans.variable} h-full antialiased`}>
+    <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
       <body className="min-h-full">{children}</body>
     </html>
   );

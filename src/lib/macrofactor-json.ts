@@ -40,7 +40,7 @@ export function cartToMacroFactorJson(items: CartItem[]): MacroFactorFoodJson[] 
         fat: Math.round(i.fat || 0),
       },
       serving: grams
-        ? { amount: 1, label: "ración", weight: grams }
+        ? { amount: 1, label: "serving", weight: grams }
         : "one",
       // El esquema recomienda prompt vacío cuando la estimación viene de una foto.
       llmPrompt: "",
