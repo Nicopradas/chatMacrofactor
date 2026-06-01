@@ -82,6 +82,10 @@ native app.
 3. Scroll the share sheet and tap **Add to Home Screen**.
 4. Confirm the name (defaults to **Chat MacroFactor**) and tap **Add**.
 
+<p align="center">
+  <img src="docs/home-screen-preview.png" alt="Chat MacroFactor icon on the iPhone home screen" width="260">
+</p>
+
 The icon shows up on your home screen. Opening it launches the app without Safari's address bar.
 Your cart stays saved in `localStorage` between sessions. If you set `APP_PASSWORD`, log in once —
 Safari will remember the session on that device.
