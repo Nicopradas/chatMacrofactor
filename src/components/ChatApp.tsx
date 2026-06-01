@@ -97,7 +97,7 @@ export function ChatApp() {
           </div>
         </header>
 
-        <MessageList messages={messages} busy={busy} />
+        <MessageList messages={messages} thinking={status === "submitted"} />
 
         <div className="mx-auto w-full max-w-3xl shrink-0 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <Composer onSend={handleSend} busy={busy} />
@@ -143,7 +143,7 @@ function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: ()
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+      className="lb-fade fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <button
@@ -161,7 +161,7 @@ function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: ()
         src={src}
         alt={alt}
         onClick={(e) => e.stopPropagation()}
-        className="max-h-full max-w-full rounded-lg object-contain"
+        className="lb-pop max-h-full max-w-full rounded-lg object-contain"
       />
     </div>
   );
@@ -169,7 +169,7 @@ function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: ()
 
 type UIMsg = ReturnType<typeof useChat>["messages"][number];
 
-function MessageList({ messages, busy }: { messages: UIMsg[]; busy: boolean }) {
+function MessageList({ messages, thinking }: { messages: UIMsg[]; thinking: boolean }) {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="mx-auto w-full max-w-3xl px-4 py-6">
@@ -188,11 +188,7 @@ function MessageList({ messages, busy }: { messages: UIMsg[]; busy: boolean }) {
             {messages.map((m) => (
               <MessageRow key={m.id} message={m} />
             ))}
-            {busy && (
-              <div className="flex gap-1 text-neutral-400">
-                <Dot /> <Dot /> <Dot />
-              </div>
-            )}
+            {thinking && <TypingBubble />}
           </div>
         )}
       </div>
@@ -326,6 +322,27 @@ function Brand() {
   );
 }
 
-function Dot() {
-  return <span className="inline-block h-2 w-2 animate-bounce rounded-full bg-current" />;
+/** Burbuja de "escribiendo" del asistente, con la misma forma que sus mensajes. */
+function TypingBubble() {
+  return (
+    <div className="msg-in flex gap-3">
+      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs text-white">
+        MF
+      </div>
+      <div className="flex items-center gap-1 rounded-2xl bg-neutral-100 px-3.5 py-3 dark:bg-[#2f2f2f]">
+        <Dot delay={0} />
+        <Dot delay={0.15} />
+        <Dot delay={0.3} />
+      </div>
+    </div>
+  );
+}
+
+function Dot({ delay }: { delay: number }) {
+  return (
+    <span
+      className="typing-dot inline-block h-2 w-2 rounded-full bg-neutral-400 dark:bg-neutral-500"
+      style={{ animationDelay: `${delay}s` }}
+    />
+  );
 }

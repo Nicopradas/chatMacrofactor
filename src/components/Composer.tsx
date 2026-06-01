@@ -180,7 +180,7 @@ export function Composer({
 
   if (voice.recording) {
     return (
-      <div className="flex items-center gap-2 rounded-[26px] border border-neutral-200 bg-white px-2.5 py-2 shadow-sm dark:border-white/10 dark:bg-[#2f2f2f]">
+      <div className="bar-in flex items-center gap-2 rounded-[26px] border border-neutral-200 bg-white px-2.5 py-2 shadow-sm dark:border-white/10 dark:bg-[#2f2f2f]">
         <button
           type="button"
           onClick={voice.cancel}
@@ -228,11 +228,11 @@ export function Composer({
   }
 
   return (
-    <div className="rounded-[26px] border border-neutral-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#2f2f2f]">
+    <div className="bar-in rounded-[26px] border border-neutral-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#2f2f2f]">
       {(compressing || images.length > 0) && (
         <div className="flex flex-wrap items-center gap-2 px-4 pt-3">
           {images.map((im, i) => (
-            <div key={i} className="relative">
+            <div key={i} className="thumb-in relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={im.url} alt={im.name} className="h-16 w-16 rounded-xl object-cover" />
               <button
