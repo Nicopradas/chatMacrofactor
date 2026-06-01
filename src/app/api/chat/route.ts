@@ -100,5 +100,12 @@ export async function POST(req: Request) {
     },
   });
 
-  return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse({
+    // Por defecto el SDK enmascara el error como "An error occurred".
+    // Reenviamos un mensaje útil para que el banner del cliente pueda explicarlo.
+    onError: (error) => {
+      console.error("[/api/chat] stream error:", error);
+      return error instanceof Error ? error.message : "Unknown error";
+    },
+  });
 }
