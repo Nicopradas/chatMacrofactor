@@ -1,8 +1,9 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { FileUIPart } from "ai";
-import { MicButton } from "./MicButton";
+import { useVoiceRecorder } from "./useVoiceRecorder";
+import { VoiceWaveform } from "./VoiceWaveform";
 
 function readAsDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -98,6 +99,10 @@ export function Composer({
 
   const [compressing, setCompressing] = useState(false);
 
+  const voice = useVoiceRecorder({
+    onTranscribed: (t) => setText((prev) => (prev ? prev + " " + t : t)),
+  });
+
   useLayoutEffect(() => {
     resizeTextarea(textareaRef.current);
   }, [text, images.length, compressing]);
@@ -137,6 +142,38 @@ export function Composer({
   }
 
   const canSend = !busy && !compressing && (text.trim() || images.length > 0);
+
+  if (voice.recording) {
+    return (
+      <div className="flex items-center gap-2 rounded-[26px] border border-neutral-200 bg-white px-2.5 py-2 shadow-sm dark:border-white/10 dark:bg-[#2f2f2f]">
+        <button
+          type="button"
+          onClick={voice.cancel}
+          title="Cancelar"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-white/10"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+
+        <VoiceWaveform analyser={voice.analyser} />
+
+        <RecordingTimer />
+
+        <button
+          type="button"
+          onClick={voice.stop}
+          title="Detener y transcribir"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white transition hover:opacity-90 dark:bg-white dark:text-neutral-900"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="6" width="12" height="12" rx="2.5" />
+          </svg>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-[26px] border border-neutral-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#2f2f2f]">
@@ -206,10 +243,26 @@ export function Composer({
         </label>
 
         <div className="flex items-center gap-1">
-          <MicButton
-            disabled={busy}
-            onTranscribed={(t) => setText((prev) => (prev ? prev + " " + t : t))}
-          />
+          <button
+            type="button"
+            onClick={voice.start}
+            disabled={busy || voice.busy}
+            title="Hablar (Whisper)"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-500 transition hover:bg-neutral-100 disabled:opacity-50 dark:text-neutral-300 dark:hover:bg-white/10"
+          >
+            {voice.busy ? (
+              <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" y1="19" x2="12" y2="22" />
+              </svg>
+            )}
+          </button>
           <button
             type="button"
             onClick={submit}
@@ -224,5 +277,21 @@ export function Composer({
         </div>
       </div>
     </div>
+  );
+}
+
+/** Cronómetro mm:ss que cuenta desde que se monta (al empezar a grabar). */
+function RecordingTimer() {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const mm = Math.floor(seconds / 60);
+  const ss = String(seconds % 60).padStart(2, "0");
+  return (
+    <span className="shrink-0 tabular-nums text-sm text-neutral-500 dark:text-neutral-400">
+      {mm}:{ss}
+    </span>
   );
 }
