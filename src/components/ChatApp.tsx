@@ -17,8 +17,8 @@ export function ChatApp() {
   const [cartOpen, setCartOpen] = useState(false);
 
   const { messages, sendMessage, status, addToolResult, setMessages } = useChat({
-    // Suaviza el render del streaming (menos saltos).
-    experimental_throttle: 40,
+    // Render casi por cada palabra (smoothStream ya las pacea a ~19ms en el server).
+    experimental_throttle: 16,
     transport: new DefaultChatTransport({
       api: "/api/chat",
       // Inyecta el estado actual del carrito en cada petición para que Claude
@@ -67,7 +67,7 @@ export function ChatApp() {
   return (
     <div className="flex h-[100dvh] w-full overflow-hidden bg-white text-neutral-900 dark:bg-[#212121] dark:text-neutral-100">
       {/* Columna del chat */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-neutral-200 px-4 py-2.5 dark:border-white/10">
           <Brand />
           <div className="flex items-center gap-1.5">
@@ -94,7 +94,7 @@ export function ChatApp() {
 
         <MessageList messages={messages} busy={busy} />
 
-        <div className="mx-auto w-full max-w-3xl px-3 pb-3">
+        <div className="mx-auto w-full max-w-3xl shrink-0 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <Composer onSend={handleSend} busy={busy} />
           <p className="mt-1.5 text-center text-[11px] text-neutral-400">
             Claude puede equivocarse al estimar porciones. Revisa el carrito antes de
