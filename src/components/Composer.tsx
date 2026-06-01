@@ -146,6 +146,21 @@ export function Composer({
     setImages((prev) => prev.filter((_, idx) => idx !== i));
   }
 
+  // Pegar (Ctrl/Cmd+V) una imagen del portapapeles: en escritorio (capturas) y
+  // en móvil (al pegar una foto copiada) entra por aquí sin tocar "adjuntar".
+  function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const items = Array.from(e.clipboardData.items);
+    const imgFiles = items
+      .filter((it) => it.kind === "file" && it.type.startsWith("image/"))
+      .map((it) => it.getAsFile())
+      .filter((f): f is File => f !== null);
+    if (imgFiles.length === 0) return; // texto normal: dejar pegar
+    e.preventDefault();
+    const dt = new DataTransfer();
+    imgFiles.forEach((f) => dt.items.add(f));
+    addFiles(dt.files);
+  }
+
   function submit() {
     if (busy || compressing) return;
     if (!text.trim() && images.length === 0) return;
@@ -251,6 +266,7 @@ export function Composer({
             submit();
           }
         }}
+        onPaste={handlePaste}
         rows={1}
         placeholder="Describe tu comida o adjunta fotos…"
         aria-label="Mensaje"
