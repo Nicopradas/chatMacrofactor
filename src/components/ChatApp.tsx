@@ -302,9 +302,12 @@ function MessageRow({ message }: { message: UIMsg }) {
 
   return (
     <div className="msg-in flex gap-3">
-      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs text-white">
-        MF
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/brand/macrofactor.png"
+        alt="MacroFactor"
+        className="mt-0.5 h-7 w-7 shrink-0 rounded-full object-cover"
+      />
       <div className="min-w-0 flex-1 space-y-2 pt-0.5 text-[15px] leading-relaxed">
         {message.parts.map((part, i) => renderPart(part, i, false))}
       </div>
@@ -417,9 +420,12 @@ function Brand() {
 function TypingBubble() {
   return (
     <div className="msg-in flex gap-3">
-      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs text-white">
-        MF
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/brand/macrofactor.png"
+        alt="MacroFactor"
+        className="mt-0.5 h-7 w-7 shrink-0 rounded-full object-cover"
+      />
       <div className="flex items-center gap-1 rounded-2xl bg-neutral-100 px-3.5 py-3 dark:bg-[#2f2f2f]">
         <Dot delay={0} />
         <Dot delay={0.15} />
