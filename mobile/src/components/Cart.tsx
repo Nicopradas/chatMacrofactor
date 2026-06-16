@@ -255,13 +255,13 @@ const styles = StyleSheet.create({
   macros: { color: colors.textMuted, fontSize: 14 },
   msg: { color: colors.textMuted, textAlign: "center", marginBottom: 8, fontSize: 13 },
   primary: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary,
     borderRadius: 999,
     paddingVertical: 14,
     alignItems: "center",
   },
   disabled: { opacity: 0.3 },
-  primaryText: { color: colors.bg, fontWeight: "600", fontSize: 15 },
+  primaryText: { color: colors.onPrimary, fontWeight: "600", fontSize: 15 },
   clear: { paddingVertical: 12, alignItems: "center", marginTop: 4 },
   clearText: { color: colors.textMuted, fontSize: 14 },
   // Row

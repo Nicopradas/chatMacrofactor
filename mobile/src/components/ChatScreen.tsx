@@ -26,7 +26,7 @@ import { LogoMark } from "./Icons";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export function ChatScreen() {
+export function ChatScreen({ bottomInset = 0 }: { bottomInset?: number }) {
   const cartCount = useCart((s) => s.items.length);
   const [cartOpen, setCartOpen] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
@@ -137,7 +137,7 @@ export function ChatScreen() {
           </View>
         )}
 
-        <View style={styles.composerWrap}>
+        <View style={[styles.composerWrap, { paddingBottom: bottomInset || 8 }]}>
           <Composer onSend={handleSend} busy={busy} />
           <Text style={styles.disclaimer}>
             Claude puede equivocarse al estimar porciones. Revisa el carrito.
@@ -269,12 +269,12 @@ const styles = StyleSheet.create({
   newBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
   newBtnText: { color: colors.textMuted, fontSize: 14 },
   cartBtn: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary,
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 999,
   },
-  cartBtnText: { color: colors.bg, fontSize: 14, fontWeight: "500" },
+  cartBtnText: { color: colors.onPrimary, fontSize: 14, fontWeight: "500" },
   badge: {
     position: "absolute",
     right: -4,

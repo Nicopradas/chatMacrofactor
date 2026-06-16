@@ -9,6 +9,8 @@ export interface DiaryEntry {
   protein: number;
   carbs: number;
   fat: number;
+  grams?: number;
+  icon?: string;
   ts: number;
 }
 
@@ -68,6 +70,8 @@ export const useDiary = create<DiaryState>()(
             protein: Math.round(i.protein || 0),
             carbs: Math.round(i.carbs || 0),
             fat: Math.round(i.fat || 0),
+            grams: i.grams ? Math.round(i.grams) : undefined,
+            icon: i.icon,
             ts,
           }));
           return {
@@ -79,7 +83,7 @@ export const useDiary = create<DiaryState>()(
         set((s) => ({ weights: { ...s.weights, [date ?? dayKey()]: kg } })),
     }),
     {
-      name: "mf-diary",
+      name: "mf-diary-v2",
       storage: createJSONStorage(() => AsyncStorage),
     },
   ),
@@ -106,6 +110,78 @@ export function lastDays(
     out.push({ date: d, key, totals: sumEntries(entries[key]) });
   }
   return out;
+}
+
+/**
+ * Rellena el diario con datos de DEMO si está vacío (solo para visualizar el
+ * diseño). En cuanto registres comida real, manda lo tuyo. Borra esta llamada
+ * cuando tengas datos de verdad.
+ */
+export function seedDemoData() {
+  const s = useDiary.getState();
+  if (Object.keys(s.entries).length > 0 || Object.keys(s.weights).length > 0) {
+    return;
+  }
+  const entries: Record<string, DiaryEntry[]> = {};
+
+  // HOY: varias comidas individuales (para la línea de tiempo del Diario).
+  const at = (h: number, m: number) => {
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    return d.getTime();
+  };
+  entries[dayKey()] = [
+    { name: "Tostadas con aguacate", icon: "avocado", calories: 320, protein: 9, carbs: 34, fat: 16, grams: 180, ts: at(8, 30) },
+    { name: "Pollo con arroz", icon: "chickenGrilled", calories: 540, protein: 48, carbs: 55, fat: 12, grams: 360, ts: at(13, 45) },
+    { name: "Yogur con frutos secos", icon: "yogurt", calories: 210, protein: 14, carbs: 18, fat: 9, grams: 200, ts: at(17, 20) },
+    { name: "Salmón y ensalada", icon: "salmonFilet", calories: 270, protein: 24, carbs: 8, fat: 15, grams: 240, ts: at(20, 30) },
+  ];
+
+  // Días anteriores: total agregado (para gráficas e historial).
+  const past = [2180, 1840, 2320, 1960, 2040, 1720];
+  past.forEach((cal, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (past.length - i));
+    entries[dayKey(d)] = [
+      {
+        name: "Total del día",
+        icon: "foodDefault",
+        calories: cal,
+        protein: Math.round((cal * 0.3) / 4),
+        carbs: Math.round((cal * 0.4) / 4),
+        fat: Math.round((cal * 0.3) / 9),
+        ts: d.getTime(),
+      },
+    ];
+  });
+
+  // Peso con tendencia ligera a la baja (un pesaje cada ~2 días).
+  const kgs = [78.6, 78.4, 78.1, 77.9, 77.6, 77.5, 77.3, 77.1];
+  const weights: Record<string, number> = {};
+  kgs.forEach((kg, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (kgs.length - 1 - i) * 2);
+    weights[dayKey(d)] = kg;
+  });
+
+  useDiary.setState({ entries, weights, calorieGoal: 2200 });
+}
+
+/** Entradas de un día ordenadas por hora (para la línea de tiempo). */
+export function entriesForDay(
+  entries: Record<string, DiaryEntry[]>,
+  date: Date = new Date(),
+): DiaryEntry[] {
+  return [...(entries[dayKey(date)] ?? [])].sort((a, b) => a.ts - b.ts);
+}
+
+/** Objetivos de macros derivados del objetivo de calorías (30/40/30 P/C/G). */
+export function macroGoals(calorieGoal: number) {
+  return {
+    protein: Math.round((calorieGoal * 0.3) / 4),
+    carbs: Math.round((calorieGoal * 0.4) / 4),
+    fat: Math.round((calorieGoal * 0.3) / 9),
+  };
 }
 
 /** Serie de pesos ordenada por fecha (más antiguo → reciente). */

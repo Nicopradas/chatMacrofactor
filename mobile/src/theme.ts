@@ -1,15 +1,18 @@
-/** Paleta oscura, en la línea del modo oscuro de la web (ChatGPT-like). */
+/** Tema CLARO (blanco), estilo iOS / ChatGPT light. */
 export const colors = {
-  bg: "#212121",
-  surface: "#2f2f2f",
-  surfaceAlt: "rgba(255,255,255,0.06)",
-  cartBg: "#171717",
-  border: "rgba(255,255,255,0.1)",
-  text: "#ececec",
-  textMuted: "#9a9a9a",
-  textFaint: "#6b6b6b",
-  placeholder: "#6b6b6b",
+  bg: "#ffffff",
+  surface: "#f2f2f7",
+  surfaceAlt: "#e9e9ee",
+  cartBg: "#ffffff",
+  border: "rgba(0,0,0,0.08)",
+  text: "#1c1c1e",
+  textMuted: "#6e6e73",
+  textFaint: "#a1a1a6",
+  placeholder: "#a1a1a6",
   accent: "#10b981",
-  danger: "#f87171",
+  danger: "#ef4444",
   white: "#ffffff",
+  // Botones primarios: oscuros con texto blanco (como el botón de envío de ChatGPT).
+  primary: "#1c1c1e",
+  onPrimary: "#ffffff",
 };

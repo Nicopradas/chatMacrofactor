@@ -6,6 +6,7 @@ import {
   Image,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -31,6 +32,16 @@ export interface ImagePart {
 }
 
 const MAX_DIM = 1568;
+
+/** Atajos que rellenan el chat con el contexto diferenciador de la app. */
+const QUICK_PHRASES: { label: string; text: string }[] = [
+  { label: "🍽️ Compartido", text: "Lo compartí entre 2 personas" },
+  { label: "½ Media ración", text: "Me comí solo la mitad" },
+  { label: "🥄 Doble ración", text: "Es ración doble" },
+  { label: "🫗 Sin aceite", text: "No cuentes el aceite añadido" },
+  { label: "📸 Mismo plato", text: "Estas fotos son del mismo plato desde ángulos distintos" },
+  { label: "🍳 Ya cocinado", text: "El peso es del alimento ya cocinado" },
+];
 
 /** Redimensiona y recomprime una foto antes de subirla (las del iPhone pesan mucho). */
 async function compress(asset: ImagePicker.ImagePickerAsset): Promise<string> {
@@ -127,6 +138,10 @@ export function Composer({
     setImages((prev) => prev.filter((_, idx) => idx !== i));
   }
 
+  function appendPhrase(phrase: string) {
+    setText((prev) => (prev.trim() ? `${prev.trim()} ${phrase}` : phrase));
+  }
+
   function submit() {
     if (busy || uploading) return;
     if (!text.trim() && images.length === 0) return;
@@ -188,18 +203,32 @@ export function Composer({
         <RecordingWave />
         <RecordingTimer />
         <Pressable onPress={() => finishRecording(false)} style={styles.recStop}>
-          <IconStop size={15} color={colors.bg} />
+          <IconStop size={15} color={colors.onPrimary} />
         </Pressable>
         <Pressable onPress={() => finishRecording(true)} style={styles.recSend}>
-          <IconArrowUp size={18} color={colors.bg} />
+          <IconArrowUp size={18} color={colors.onPrimary} />
         </Pressable>
       </View>
     );
   }
 
   return (
-    <View style={styles.wrap}>
-      {(uploading || images.length > 0 || error) && (
+    <View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.chips}
+      >
+        {QUICK_PHRASES.map((q) => (
+          <Pressable key={q.label} style={styles.chip} onPress={() => appendPhrase(q.text)}>
+            <Text style={styles.chipText}>{q.label}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      <View style={styles.wrap}>
+        {(uploading || images.length > 0 || error) && (
         <View style={styles.thumbs}>
           {images.map((im, i) => (
             <View key={im.url} style={styles.thumbBox}>
@@ -246,9 +275,10 @@ export function Composer({
             disabled={!canSend}
             style={[styles.sendBtn, !canSend && styles.sendDisabled]}
           >
-            <IconArrowUp size={18} color={colors.bg} />
+            <IconArrowUp size={18} color={colors.onPrimary} />
           </Pressable>
         </View>
+      </View>
       </View>
     </View>
   );
@@ -313,6 +343,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  chips: { gap: 8, paddingHorizontal: 4, paddingBottom: 8 },
+  chip: {
+    backgroundColor: colors.surface,
+    borderRadius: 999,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  },
+  chipText: { color: colors.text, fontSize: 13, fontWeight: "500" },
   thumbs: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -368,7 +408,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -400,7 +440,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -409,7 +449,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },

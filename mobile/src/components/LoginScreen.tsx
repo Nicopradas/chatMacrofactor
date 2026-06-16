@@ -61,7 +61,7 @@ export function LoginScreen() {
           style={[styles.button, (!password || busy) && styles.buttonDisabled]}
         >
           {busy ? (
-            <ActivityIndicator color={colors.bg} />
+            <ActivityIndicator color={colors.onPrimary} />
           ) : (
             <Text style={styles.buttonText}>Entrar</Text>
           )}
@@ -103,12 +103,12 @@ const styles = StyleSheet.create({
   error: { color: colors.danger, marginTop: 12, fontSize: 14 },
   button: {
     width: "100%",
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary,
     borderRadius: 999,
     paddingVertical: 14,
     alignItems: "center",
     marginTop: 16,
   },
   buttonDisabled: { opacity: 0.4 },
-  buttonText: { color: colors.bg, fontWeight: "600", fontSize: 16 },
+  buttonText: { color: colors.onPrimary, fontWeight: "600", fontSize: 16 },
 });

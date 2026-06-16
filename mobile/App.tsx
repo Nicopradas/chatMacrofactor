@@ -1,18 +1,21 @@
 import "./polyfills";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Keyboard, Platform, View } from "react-native";
+import { ActivityIndicator, Keyboard, Platform, StyleSheet, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "./src/auth";
 import { colors } from "./src/theme";
 import { ChatScreen } from "./src/components/ChatScreen";
 import { StatsScreen } from "./src/components/StatsScreen";
+import { TimelineScreen } from "./src/components/TimelineScreen";
 import { LoginScreen } from "./src/components/LoginScreen";
-import { TabBar, type Tab } from "./src/components/TabBar";
+import { TabBar, TAB_BAR_PILL_HEIGHT, type Tab } from "./src/components/TabBar";
+import { seedDemoData } from "./src/lib/diary-store";
 
 function Main() {
   const [tab, setTab] = useState<Tab>("chat");
   const [kbVisible, setKbVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const showEvt = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
@@ -25,19 +28,34 @@ function Main() {
     };
   }, []);
 
+  // La píldora flota (liquid glass) sobre el contenido: las pantallas reservan
+  // este hueco abajo para que su contenido no quede tapado.
+  const tabBarHeight = TAB_BAR_PILL_HEIGHT + Math.max(insets.bottom, 14) + 16;
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       {/* Mantenemos ambas pantallas montadas para no perder el estado del chat. */}
       <View style={{ flex: 1, display: tab === "chat" ? "flex" : "none" }}>
-        <ChatScreen />
+        <ChatScreen bottomInset={kbVisible ? 0 : tabBarHeight} />
       </View>
-      <View style={{ flex: 1, display: tab === "stats" ? "flex" : "none" }}>
-        <StatsScreen />
+      <View style={{ flex: 1, display: tab === "diary" ? "flex" : "none" }}>
+        <TimelineScreen bottomInset={tabBarHeight} />
       </View>
-      {!kbVisible && <TabBar active={tab} onChange={setTab} />}
+      <View style={{ flex: 1, display: tab === "home" ? "flex" : "none" }}>
+        <StatsScreen bottomInset={tabBarHeight} />
+      </View>
+      {!kbVisible && (
+        <View style={styles.tabBarWrap} pointerEvents="box-none">
+          <TabBar active={tab} onChange={setTab} />
+        </View>
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBarWrap: { position: "absolute", left: 0, right: 0, bottom: 0 },
+});
 
 export default function App() {
   const ready = useAuth((s) => s.ready);
@@ -46,11 +64,12 @@ export default function App() {
 
   useEffect(() => {
     init();
+    seedDemoData(); // datos de DEMO si el diario está vacío
   }, [init]);
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       {!ready ? (
         <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: "center" }}>
           <ActivityIndicator color={colors.textMuted} />
