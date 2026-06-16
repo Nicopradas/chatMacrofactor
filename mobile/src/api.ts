@@ -23,6 +23,62 @@ export async function uploadImage(uri: string, name: string): Promise<string> {
   return data.url;
 }
 
+export interface BarcodeProduct {
+  barcode: string;
+  name: string;
+  brand?: string;
+  quantity?: string;
+  /** Valores por 100 g/ml cuando están disponibles. */
+  per100?: {
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+  };
+}
+
+/**
+ * Busca un producto por su código de barras en Open Food Facts (base de datos
+ * pública y gratuita). Devuelve `null` si no se encuentra.
+ */
+export async function lookupBarcode(barcode: string): Promise<BarcodeProduct | null> {
+  const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(
+    barcode,
+  )}.json?fields=product_name,product_name_es,brands,quantity,nutriments`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": "ChatMacrofactor/1.0 (mobile app)" },
+  });
+  if (!res.ok) return null;
+  const data = (await res.json()) as {
+    status?: number;
+    product?: {
+      product_name?: string;
+      product_name_es?: string;
+      brands?: string;
+      quantity?: string;
+      nutriments?: Record<string, number>;
+    };
+  };
+  if (data.status !== 1 || !data.product) return null;
+  const p = data.product;
+  const n = p.nutriments ?? {};
+  const name = (p.product_name_es || p.product_name || "").trim();
+  if (!name) return null;
+  const num = (v: unknown) => (typeof v === "number" && isFinite(v) ? v : undefined);
+  return {
+    barcode,
+    name,
+    brand: p.brands?.split(",")[0]?.trim() || undefined,
+    quantity: p.quantity?.trim() || undefined,
+    per100: {
+      calories: num(n["energy-kcal_100g"]),
+      protein: num(n.proteins_100g),
+      carbs: num(n.carbohydrates_100g),
+      fat: num(n.fat_100g),
+    },
+  };
+}
+
 /** Envía un audio grabado a Whisper (vía backend) y devuelve la transcripción. */
 export async function transcribeAudio(uri: string): Promise<string> {
   const res = await FileSystem.uploadAsync(apiUrl("/api/transcribe"), uri, {

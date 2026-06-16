@@ -18,11 +18,12 @@ import { apiUrl } from "../config";
 import { useCart } from "../lib/cart-store";
 import { mfIconEmoji } from "../lib/mf-icon-emoji";
 import { colors } from "../theme";
+import { GlassButton } from "../../modules/glass-button";
 import { Composer, type ImagePart } from "./Composer";
 import { CartSheet } from "./Cart";
 import { ChatMarkdown } from "./Markdown";
 import { Lightbox } from "./Lightbox";
-import { LogoMark } from "./Icons";
+import { IconCart, IconPlus, LogoMark } from "./Icons";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -86,17 +87,29 @@ export function ChatScreen({ bottomInset = 0 }: { bottomInset?: number }) {
           <LogoMark size={26} color={colors.accent} />
         </View>
         <View style={styles.headerBtns}>
-          <Pressable onPress={() => setMessages([])} style={styles.newBtn} hitSlop={6}>
-            <Text style={styles.newBtnText}>Nuevo</Text>
-          </Pressable>
-          <Pressable onPress={() => setCartOpen(true)} style={styles.cartBtn} hitSlop={6}>
-            <Text style={styles.cartBtnText}>Carrito</Text>
+          <GlassButton
+            systemImage="plus"
+            tintColor={colors.text}
+            symbolSize={19}
+            onPress={() => setMessages([])}
+          >
+            <IconPlus size={22} color={colors.text} />
+          </GlassButton>
+          <View>
+            <GlassButton
+              systemImage="cart"
+              tintColor={colors.text}
+              symbolSize={18}
+              onPress={() => setCartOpen(true)}
+            >
+              <IconCart size={21} color={colors.text} />
+            </GlassButton>
             {cartCount > 0 && (
-              <View style={styles.badge}>
+              <View style={styles.badge} pointerEvents="none">
                 <Text style={styles.badgeText}>{cartCount}</Text>
               </View>
             )}
-          </Pressable>
+          </View>
         </View>
       </View>
 
@@ -265,16 +278,7 @@ const styles = StyleSheet.create({
   brand: { flexDirection: "row", alignItems: "center", gap: 8 },
   brandLogo: { width: 28, height: 28, borderRadius: 7 },
   brandText: { color: colors.text, fontSize: 16, fontWeight: "600" },
-  headerBtns: { flexDirection: "row", alignItems: "center", gap: 8 },
-  newBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
-  newBtnText: { color: colors.textMuted, fontSize: 14 },
-  cartBtn: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  cartBtnText: { color: colors.onPrimary, fontSize: 14, fontWeight: "500" },
+  headerBtns: { flexDirection: "row", alignItems: "center", gap: 10 },
   badge: {
     position: "absolute",
     right: -4,

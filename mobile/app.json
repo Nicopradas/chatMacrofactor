@@ -45,6 +45,12 @@
           "cameraPermission": "Para hacer fotos de tu comida y estimar las calorías."
         }
       ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Para escanear el código de barras de tus alimentos."
+        }
+      ],
       "expo-secure-store"
     ]
   }

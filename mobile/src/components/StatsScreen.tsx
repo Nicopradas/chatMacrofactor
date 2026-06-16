@@ -18,13 +18,14 @@ import {
 } from "../lib/diary-store";
 import { colors } from "../theme";
 import { IconChevron } from "./Icons";
+import { StatDetail, type DetailKind } from "./StatDetail";
 
 export function StatsScreen({ bottomInset = 0 }: { bottomInset?: number }) {
   const entries = useDiary((s) => s.entries);
   const goal = useDiary((s) => s.calorieGoal);
   const weights = useDiary((s) => s.weights);
   const setGoal = useDiary((s) => s.setGoal);
-  const setWeight = useDiary((s) => s.setWeight);
+  const [detail, setDetail] = React.useState<DetailKind | null>(null);
 
   const today = totalsForDay(entries);
   const remaining = Math.max(0, goal - today.calories);
@@ -59,26 +60,6 @@ export function StatsScreen({ bottomInset = 0 }: { bottomInset?: number }) {
     );
   }
 
-  function logWeight() {
-    Alert.prompt(
-      "Registrar peso",
-      "Peso de hoy (kg)",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Guardar",
-          onPress: (v?: string) => {
-            const n = Number((v ?? "").replace(",", "."));
-            if (n > 0) setWeight(n);
-          },
-        },
-      ],
-      "plain-text",
-      latestWeight ? String(latestWeight) : "",
-      "decimal-pad",
-    );
-  }
-
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView
@@ -103,7 +84,13 @@ export function StatsScreen({ bottomInset = 0 }: { bottomInset?: number }) {
         {/* Análisis */}
         <Text style={styles.section}>Análisis</Text>
         <View style={styles.grid}>
-          <Card title="Calorías" subtitle="Últimos 7 días" value={`${avgCals}`} unit="kcal/día">
+          <Card
+            title="Calorías"
+            subtitle="Últimos 7 días"
+            value={`${avgCals}`}
+            unit="kcal/día"
+            onPress={() => setDetail("calorias")}
+          >
             <MiniBars values={weekCals} goal={goal} />
           </Card>
           <Card
@@ -111,7 +98,7 @@ export function StatsScreen({ bottomInset = 0 }: { bottomInset?: number }) {
             subtitle="Tendencia"
             value={latestWeight ? latestWeight.toFixed(1) : "—"}
             unit={latestWeight ? "kg" : ""}
-            onPress={logWeight}
+            onPress={() => setDetail("peso")}
           >
             <MiniLine points={weightPts.map((p) => p.kg)} />
           </Card>
@@ -120,14 +107,28 @@ export function StatsScreen({ bottomInset = 0 }: { bottomInset?: number }) {
         {/* Hábitos */}
         <Text style={styles.section}>Hábitos</Text>
         <View style={styles.grid}>
-          <Card title="Registro" subtitle="Últimos 30 días" value={`${loggedWeek}/7`} unit="esta semana">
+          <Card
+            title="Registro"
+            subtitle="Últimos 30 días"
+            value={`${loggedWeek}/7`}
+            unit="esta semana"
+            onPress={() => setDetail("registro")}
+          >
             <DotGrid active={days30.map((d) => d.food)} color={colors.accent} />
           </Card>
-          <Card title="Pesajes" subtitle="Últimos 30 días" value={`${weighedWeek}/7`} unit="esta semana">
+          <Card
+            title="Pesajes"
+            subtitle="Últimos 30 días"
+            value={`${weighedWeek}/7`}
+            unit="esta semana"
+            onPress={() => setDetail("pesajes")}
+          >
             <DotGrid active={days30.map((d) => d.weight)} color="#3b82f6" />
           </Card>
         </View>
       </ScrollView>
+
+      <StatDetail kind={detail} onClose={() => setDetail(null)} />
     </SafeAreaView>
   );
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ActionSheetIOS,
   ActivityIndicator,
+  Alert,
   Animated,
   Image,
   Platform,
@@ -20,9 +21,10 @@ import {
   setAudioModeAsync,
   useAudioRecorder,
 } from "expo-audio";
-import { transcribeAudio, uploadImage } from "../api";
+import { lookupBarcode, transcribeAudio, uploadImage } from "../api";
 import { colors } from "../theme";
 import { IconArrowUp, IconClose, IconMic, IconPlus, IconStop } from "./Icons";
+import { BarcodeScanner } from "./BarcodeScanner";
 
 export interface ImagePart {
   type: "file";
@@ -67,6 +69,10 @@ export function Composer({
   const [images, setImages] = useState<ImagePart[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Código de barras
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanning, setScanning] = useState(false);
 
   // Voz
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
@@ -121,21 +127,67 @@ export function Composer({
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ["Cancelar", "Hacer foto", "Elegir de la galería"],
+          options: [
+            "Cancelar",
+            "Hacer foto",
+            "Elegir de la galería",
+            "Escanear código de barras",
+          ],
           cancelButtonIndex: 0,
         },
         (i) => {
           if (i === 1) pickImages(true);
           else if (i === 2) pickImages(false);
+          else if (i === 3) setScannerOpen(true);
         },
       );
     } else {
-      pickImages(false);
+      Alert.alert("Añadir comida", undefined, [
+        { text: "Hacer foto", onPress: () => pickImages(true) },
+        { text: "Elegir de la galería", onPress: () => pickImages(false) },
+        { text: "Escanear código de barras", onPress: () => setScannerOpen(true) },
+        { text: "Cancelar", style: "cancel" },
+      ]);
     }
   }
 
   function removeImage(i: number) {
     setImages((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  async function handleBarcode(code: string) {
+    setScannerOpen(false);
+    setScanning(true);
+    setError(null);
+    try {
+      const p = await lookupBarcode(code);
+      if (!p) {
+        onSend(
+          `He escaneado un producto con código de barras ${code}, pero no aparece en la base de datos. ¿Puedes ayudarme a estimar sus calorías y macros?`,
+          [],
+        );
+        return;
+      }
+      const m = p.per100 ?? {};
+      const nutr: string[] = [];
+      if (m.calories != null) nutr.push(`${Math.round(m.calories)} kcal`);
+      if (m.protein != null) nutr.push(`${Math.round(m.protein)} g proteína`);
+      if (m.carbs != null) nutr.push(`${Math.round(m.carbs)} g carbohidratos`);
+      if (m.fat != null) nutr.push(`${Math.round(m.fat)} g grasa`);
+      const brand = p.brand ? ` (${p.brand})` : "";
+      const qty = p.quantity ? ` Tamaño del envase: ${p.quantity}.` : "";
+      const info = nutr.length
+        ? ` Información nutricional por 100 g: ${nutr.join(", ")}.`
+        : "";
+      onSend(
+        `He escaneado este producto con el código de barras: ${p.name}${brand}.${info}${qty} Añádelo a mi registro; pregúntame la cantidad si te hace falta.`,
+        [],
+      );
+    } catch {
+      setError("No se pudo buscar el producto. Inténtalo de nuevo.");
+    } finally {
+      setScanning(false);
+    }
   }
 
   function appendPhrase(phrase: string) {
@@ -228,7 +280,7 @@ export function Composer({
       </ScrollView>
 
       <View style={styles.wrap}>
-        {(uploading || images.length > 0 || error) && (
+        {(uploading || scanning || images.length > 0 || error) && (
         <View style={styles.thumbs}>
           {images.map((im, i) => (
             <View key={im.url} style={styles.thumbBox}>
@@ -239,6 +291,12 @@ export function Composer({
             </View>
           ))}
           {uploading && <Text style={styles.hint}>Subiendo…</Text>}
+          {scanning && (
+            <View style={styles.scanHint}>
+              <ActivityIndicator size="small" color={colors.textMuted} />
+              <Text style={styles.hint}>Buscando producto…</Text>
+            </View>
+          )}
           {error && !uploading && <Text style={styles.errorText}>{error}</Text>}
         </View>
       )}
@@ -280,6 +338,12 @@ export function Composer({
         </View>
       </View>
       </View>
+
+      <BarcodeScanner
+        visible={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onScanned={handleBarcode}
+      />
     </View>
   );
 }
@@ -376,6 +440,7 @@ const styles = StyleSheet.create({
   },
   thumbXText: { color: "#fff", fontSize: 13, lineHeight: 15 },
   hint: { color: colors.textMuted, fontSize: 12 },
+  scanHint: { flexDirection: "row", alignItems: "center", gap: 8 },
   errorText: { color: colors.danger, fontSize: 12 },
   input: {
     color: colors.text,

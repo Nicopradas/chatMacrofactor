@@ -89,6 +89,37 @@ export function LogoMark({ size = 24, color = "#10b981" }: IconProps) {
   );
 }
 
+export function IconBarcode({ size = 22, color = "#fff" }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M3 5v14M7.5 5v14M12 5v14M16 5v14M21 5v14"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+export function IconCart({ size = 22, color = "#fff" }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M3 4h2l2.4 12.3a1 1 0 0 0 1 .8h8.3a1 1 0 0 0 1-.79L21 8H6"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M9 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM18 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+        fill={color}
+      />
+    </Svg>
+  );
+}
+
 export function IconChat({ size = 24, color = "#fff" }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

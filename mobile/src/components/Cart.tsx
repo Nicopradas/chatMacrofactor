@@ -16,6 +16,8 @@ import { mfIconEmoji } from "../lib/mf-icon-emoji";
 import type { CartItem } from "../lib/types";
 import { MF_SHORTCUT_NAME } from "../config";
 import { colors } from "../theme";
+import { GlassButton } from "../../modules/glass-button";
+import { IconClose } from "./Icons";
 
 const num = (n: number | undefined) => (n == null ? "" : String(Math.round(n)));
 
@@ -54,11 +56,18 @@ export function CartSheet({ visible, onClose }: { visible: boolean; onClose: () 
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>
-            Carrito <Text style={styles.count}>{items.length}</Text>
+            Carrito
+            {items.length > 0 ? <Text style={styles.count}> {items.length}</Text> : null}
           </Text>
-          <Pressable onPress={onClose} hitSlop={8}>
-            <Text style={styles.close}>Cerrar</Text>
-          </Pressable>
+          <GlassButton
+            systemImage="xmark"
+            tintColor={colors.text}
+            symbolSize={15}
+            size={36}
+            onPress={onClose}
+          >
+            <IconClose size={18} color={colors.text} />
+          </GlassButton>
         </View>
 
         <ScrollView style={styles.list} contentContainerStyle={{ padding: 12, gap: 8 }}>
@@ -218,11 +227,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingTop: 28,
+    paddingBottom: 14,
   },
   title: { color: colors.text, fontSize: 17, fontWeight: "600" },
   count: { color: colors.textMuted, fontWeight: "400" },
-  close: { color: colors.textMuted, fontSize: 15 },
   list: { flex: 1 },
   empty: {
     color: colors.textMuted,
