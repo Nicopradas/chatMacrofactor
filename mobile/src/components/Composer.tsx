@@ -21,6 +21,7 @@ import {
 } from "expo-audio";
 import { transcribeAudio, uploadImage } from "../api";
 import { colors } from "../theme";
+import { IconArrowUp, IconClose, IconMic, IconPlus, IconStop } from "./Icons";
 
 export interface ImagePart {
   type: "file";
@@ -182,15 +183,15 @@ export function Composer({
     return (
       <View style={styles.recBar}>
         <Pressable onPress={cancelRecording} hitSlop={8} style={styles.recIcon}>
-          <Text style={styles.recIconText}>✕</Text>
+          <IconClose size={18} color={colors.textMuted} />
         </Pressable>
         <RecordingWave />
         <RecordingTimer />
         <Pressable onPress={() => finishRecording(false)} style={styles.recStop}>
-          <View style={styles.recStopSquare} />
+          <IconStop size={15} color={colors.bg} />
         </Pressable>
         <Pressable onPress={() => finishRecording(true)} style={styles.recSend}>
-          <Text style={styles.recSendArrow}>↑</Text>
+          <IconArrowUp size={18} color={colors.bg} />
         </Pressable>
       </View>
     );
@@ -224,7 +225,7 @@ export function Composer({
 
       <View style={styles.row}>
         <Pressable onPress={attach} style={styles.circleBtn} hitSlop={6}>
-          <Text style={styles.plus}>＋</Text>
+          <IconPlus size={22} color={colors.textMuted} />
         </Pressable>
 
         <View style={styles.rightBtns}>
@@ -237,7 +238,7 @@ export function Composer({
             {transcribing ? (
               <ActivityIndicator size="small" color={colors.textMuted} />
             ) : (
-              <Text style={styles.mic}>🎤</Text>
+              <IconMic size={20} color={colors.textMuted} />
             )}
           </Pressable>
           <Pressable
@@ -245,7 +246,7 @@ export function Composer({
             disabled={!canSend}
             style={[styles.sendBtn, !canSend && styles.sendDisabled]}
           >
-            <Text style={styles.sendArrow}>↑</Text>
+            <IconArrowUp size={18} color={colors.bg} />
           </Pressable>
         </View>
       </View>
