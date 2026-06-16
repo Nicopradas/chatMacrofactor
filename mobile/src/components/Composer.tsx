@@ -161,8 +161,10 @@ export function Composer({
         setText((prev) => (prev ? `${prev} ${t}` : t));
         if (pendingSend.current) setAutoSend(true);
       }
-    } catch {
-      setError("No se pudo transcribir el audio.");
+    } catch (e) {
+      setError(
+        `No se pudo transcribir: ${e instanceof Error ? e.message : "error"}`,
+      );
     } finally {
       setTranscribing(false);
       pendingSend.current = false;
