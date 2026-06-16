@@ -1,0 +1,71 @@
+/**
+ * Iconos válidos de MacroFactor (enum `Icon` del paquete oficial apple-shortcuts).
+ * Claude elige uno por alimento; si devuelve algo que no está aquí, caemos a "foodDefault".
+ */
+export const MF_ICONS = [
+  "water","coffee","coffeeCappuccino","coffeeEspresso","coffeeIceWhip","creamer",
+  "juiceApple","juiceLemonade","juiceOrange","juiceTomato","juiceWatermelon","kefir",
+  "milk","milkshakeTwoFlavors","milkSoy","milkRice","milkshake","soda","tea",
+  "teaFruitLemon","teaFruitOrange","alcoholBeer","alcoholCocktail","alcoholLiqueur",
+  "alcoholMassProducedFruity","alcoholSpirit","alcoholWhiskey","alcoholWineRed",
+  "alcoholWineWhite","foodDefault","plateQuickAdd","acorn","almond","apple","appleRed",
+  "appleSauceBowl","appleSauceJar","artichoke","asparagus","avocado","babyMilk","bacon",
+  "bagel","bagSnackJunkFood","bakingPan","bananas","baoziXiaoLongBao","beansPan",
+  "beefTarTar","bellPepperGreen","bellPepperRed","bellPepperYellow","biryani","biscotti",
+  "biscuit","blueberries","blueberry","bokChoyXiaoBaiCai","bowlChopSticks","breadBaguette",
+  "breadLoafMultigrain","breadLoafWheat","breadMultigrainTwoSlices","breadPita",
+  "breadRyeTwoSlicesWithSpread","breadWheatTwoSlices","broccoli","burdockRoot",
+  "burgerCheesePattyLettuceTomato","burgerSesameSeedRoundBun",
+  "burgerSesameSeedRoundBunLettuceKetchup","burgerSquareBreadBunLettuceKetchup",
+  "burritoEnchiladaRollBrown","burritoEnchiladaRollGreen","burritoEnchiladaRollOrange",
+  "burritoSoftTacoChilis","butter","butterCrustPastriesSmall","butterCrustPastryLarge",
+  "butterPlate","butterPlatePale","cabbage","cabbageHead","cakeSliceCheesecake",
+  "cakeSliceChocolateCherry","cakeSquareChocolate","cakeSquares","calzone","candy",
+  "candyBar","candyToffee","cannedGoods","cantaloupe","carrot","cashews","casserole",
+  "cauliflower","celery","chard","cheeseSlice","cheeseString","cheeseWheel","cherries",
+  "chestnut","chicken","chickenGrilled","chickenNuggetsBBQSauce","chickenWings",
+  "chiliPeppersGreen","chiliPeppersRed","chiliPeppersRedYellow","chipsBaked",
+  "chipsBakedSeasoned","chipsPotato","chirashiBowlSushi","chocolateBars","chocolateChips",
+  "chocolateHotDrinkWhipCream","chocolateKiss","cinnamon","cinnamonRoll","cocoa","coconut",
+  "congee","corn","cottageCheese","crab","crackersDigestives","cranberries","croissant",
+  "croutons","cucumber","cupcakeChocolate","daikon","dairyIceCream","date","deer","dill",
+  "dinnerRolls","doubleCheeseBurgerSesameSeedRoundBun","doughnut","drySpicesBrown",
+  "drySpicesGreen","drySpicesOlive","drySpicesRed","drySpicesYellow","duck","egg",
+  "eggDeviled","eggplant","eggs","eggTartDanTa","falafel","fig","figNewtons","fish",
+  "frenchFries","fruitSalad","garlic","garlicRoasted","ginger","grapefruit","grapesGreen",
+  "grapesRed","gravy","greenBeans","greenBeansFive","greenOnion","guacamole","guava",
+  "gummyBears","honey","hotDogInBunMustard","hotDogs","hummus","iceCreamDrumstickChocolate",
+  "iceCreamDrumstickStrawberry","iceCreamSandwich","iceCreamSugarCone","iceCreamSundae",
+  "jamApricot","jamMarmalade","jamRed","jar","jarOrangeLarge","jello","jelloCake",
+  "jerkyBeef","kaiserRoll","ketchup","kiwi","lasagne","lemon","lentils","lettuce",
+  "lettuceHead","lime","lobster","lychee","macadamiaNut","macAndCheese","mango",
+  "mapleSyrup","marshmallow","mayo","mayoSqueezeBottle","mealPlateFullEnglishBreakfast",
+  "mealPlateSteakPotatoesVeggies","mealWaterGlassRice","meatballs","meatLoaf","meatLoafPan",
+  "melonHoneydew","milkCerealBlueBowl","milkCerealYellowBowl","mintGum","muffin",
+  "muffinNuts","mushroom","mustard","nut","nutBrazil","nutsMixed","oatmeal","octopus",
+  "oil","oliveBlack","oliveGreen","omelette","omeletteWithMeat","onion","onionRed",
+  "orange","oreos","oshirukoZenzaiAdzukiRedBean","overnightOats","oyster","pancake",
+  "pancakesStack","parsley","peach","peanut","peanutButter","pear","pearAsian","pearBosc",
+  "pecan","persimmon","pie","pieLatticeCrust","pineapple","pineNut","pistachio",
+  "pizzaPepperoni","pizzaPepperoniMushroom","plum","pomegranate","popcorn","popTarts",
+  "porkLoin","porkLoinWithDarkRub","potato","potatoesPurple","potatoesRedSweet",
+  "potatoesWhiteRusset","potatoRed","potPie","pretzel","pretzelSticks","prune","pumpkin",
+  "pumpkinSeed","radishes","raisins","raspberry","ravioli","rhubarb","ribs","riceBrownBowl",
+  "riceCake","riceWhiteBowl","saladBowl","saladEggsTomatoes","saladPlate","salami",
+  "salmonFilet","salsa","sashimiTuna","sauceBBQWorcestershire","sausage","scallops",
+  "seaweedSalad","shallot","shrimp","sloppyJoe","snowPeas","softServeChocolateSwirls",
+  "soup","soupBowl","soupBowlCongee","soupGreen","soupPea","soupRamenPork","soupRamenRed",
+  "soupRedTomato","sourCream","spaghettiRedSauce","spam","spicesGround","sproutedMungBean",
+  "squashAcorn","squid","starfruit","steakBoneIn","steakPlate","steakRaw","stewPot",
+  "strawberry","sugarBrownCubes","sugarWhite","sugarWhiteCubes","sunflowerSeeds","sushi",
+  "toast","tomato","tostadaLahmacun","turkey","turkeyRoast","turnip","turnover",
+  "vegetables","waffles","walnut","watercress","watermelon","wheat","wheatFlat","wokStirFry",
+  "yogurt","zucchini",
+] as const;
+
+export const MF_ICON_SET = new Set<string>(MF_ICONS);
+
+/** Devuelve un icono válido o "foodDefault" si no lo es. */
+export function safeIcon(icon: string | undefined): string {
+  return icon && MF_ICON_SET.has(icon) ? icon : "foodDefault";
+}

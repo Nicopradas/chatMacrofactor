@@ -17,8 +17,21 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // App nativa (iOS): no maneja cookies cómodamente, así que autentica enviando
+  // el token derivado de la contraseña en una cabecera. RN no aplica CORS, así
+  // que esto es seguro siempre que el token coincida con el esperado.
+  const headerToken = req.headers.get("x-app-token");
+  if (headerToken && headerToken === expected) return NextResponse.next();
+
   const token = req.cookies.get(AUTH_COOKIE)?.value;
   if (token === expected) return NextResponse.next();
+
+  // Para rutas de API (incluida la app nativa) devolvemos 401 JSON en vez de
+  // redirigir: un fetch no puede "navegar" a /login y seguir un redirect aquí
+  // solo confunde al cliente.
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
 
   const url = req.nextUrl.clone();
   url.pathname = "/login";

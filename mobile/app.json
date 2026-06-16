@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "Chat MacroFactor",
+    "slug": "mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "chatmf",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nicopradas.chatmacrofactor",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Para hacer fotos de tu comida y estimar las calorías.",
+        "NSPhotoLibraryUsageDescription": "Para adjuntar fotos de tu comida desde la galería.",
+        "NSMicrophoneUsageDescription": "Para dictar por voz el contexto de tu comida.",
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Para dictar por voz el contexto de tu comida."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Para adjuntar fotos de tu comida desde la galería.",
+          "cameraPermission": "Para hacer fotos de tu comida y estimar las calorías."
+        }
+      ],
+      "expo-secure-store"
+    ]
+  }
+}
