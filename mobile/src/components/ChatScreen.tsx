@@ -22,6 +22,7 @@ import { Composer, type ImagePart } from "./Composer";
 import { CartSheet } from "./Cart";
 import { ChatMarkdown } from "./Markdown";
 import { Lightbox } from "./Lightbox";
+import { LogoMark } from "./Icons";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -78,12 +79,11 @@ export function ChatScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
+    <SafeAreaView style={styles.safe} edges={["top"]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.brand}>
-          <Image source={require("../../assets/macrofactor.png")} style={styles.brandLogo} />
-          <Text style={styles.brandText}>MacroFactor</Text>
+          <LogoMark size={26} color={colors.accent} />
         </View>
         <View style={styles.headerBtns}>
           <Pressable onPress={() => setMessages([])} style={styles.newBtn} hitSlop={6}>
@@ -118,7 +118,7 @@ export function ChatScreen() {
               <Text style={styles.emptyTitle}>¿Qué has comido?</Text>
               <Text style={styles.emptyText}>
                 Manda fotos de tu comida y explícame el contexto. Lo estimo, lo añado al
-                carrito y lo registras en MacroFactor.
+                carrito y queda registrado en tu resumen.
               </Text>
             </View>
           ) : (
@@ -172,7 +172,9 @@ function MessageRow({
 
   return (
     <View style={styles.botRow}>
-      <Image source={require("../../assets/macrofactor.png")} style={styles.avatar} />
+      <View style={styles.avatar}>
+        <LogoMark size={16} color={colors.accent} />
+      </View>
       <View style={styles.botContent}>
         {message.parts.map((p: any, i: number) => renderPart(p, i, false, onImagePress))}
       </View>
@@ -238,7 +240,9 @@ function toolChipLabel(part: any): string | null {
 function TypingBubble() {
   return (
     <View style={styles.botRow}>
-      <Image source={require("../../assets/macrofactor.png")} style={styles.avatar} />
+      <View style={styles.avatar}>
+        <LogoMark size={16} color={colors.accent} />
+      </View>
       <View style={styles.typing}>
         <Text style={styles.typingText}>···</Text>
       </View>
@@ -306,7 +310,15 @@ const styles = StyleSheet.create({
   },
   userText: { color: colors.text, fontSize: 15, lineHeight: 21 },
   botRow: { flexDirection: "row", gap: 10 },
-  avatar: { width: 28, height: 28, borderRadius: 14, marginTop: 2 },
+  avatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    marginTop: 2,
+    backgroundColor: colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   botContent: { flex: 1, gap: 8 },
   chatImage: { width: 180, height: 180, borderRadius: 12, maxWidth: "100%" },
   chip: {

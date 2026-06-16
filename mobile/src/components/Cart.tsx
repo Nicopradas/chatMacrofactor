@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { cartTotals, useCart } from "../lib/cart-store";
+import { useDiary } from "../lib/diary-store";
 import { cartToMacroFactorJson } from "../lib/macrofactor-json";
 import { mfIconEmoji } from "../lib/mf-icon-emoji";
 import type { CartItem } from "../lib/types";
@@ -23,20 +24,24 @@ export function CartSheet({ visible, onClose }: { visible: boolean; onClose: () 
   const updateItem = useCart((s) => s.updateItem);
   const removeItem = useCart((s) => s.removeItem);
   const clear = useCart((s) => s.clear);
+  const logToDiary = useDiary((s) => s.logItems);
   const [msg, setMsg] = useState<string | null>(null);
 
   const totals = cartTotals(items);
 
-  function sendToMacroFactor() {
+  function register() {
     if (items.length === 0) return;
+    // Registra en el diario local (alimenta el Resumen) y abre el atajo de Apple.
+    logToDiary(items);
     const json = JSON.stringify(cartToMacroFactorJson(items));
     const url = `shortcuts://run-shortcut?name=${encodeURIComponent(
       MF_SHORTCUT_NAME,
     )}&input=text&text=${encodeURIComponent(json)}`;
-    setMsg("Abriendo Atajos… confirma para registrar en MacroFactor.");
-    Linking.openURL(url).catch(() =>
-      setMsg("No se pudo abrir Atajos. ¿Tienes el atajo instalado?"),
-    );
+    setMsg("Comida registrada ✓");
+    Linking.openURL(url).catch(() => {
+      /* el atajo puede no estar instalado; ya queda en el diario */
+    });
+    clear();
   }
 
   return (
@@ -90,11 +95,11 @@ export function CartSheet({ visible, onClose }: { visible: boolean; onClose: () 
           {msg && <Text style={styles.msg}>{msg}</Text>}
 
           <Pressable
-            onPress={sendToMacroFactor}
+            onPress={register}
             disabled={items.length === 0}
             style={[styles.primary, items.length === 0 && styles.disabled]}
           >
-            <Text style={styles.primaryText}>Registrar en MacroFactor</Text>
+            <Text style={styles.primaryText}>Registrar comida</Text>
           </Pressable>
           {items.length > 0 && (
             <Pressable onPress={clear} style={styles.clear}>

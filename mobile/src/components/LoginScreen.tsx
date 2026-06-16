@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,7 +10,9 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "../auth";
+import { APP_NAME } from "../config";
 import { colors } from "../theme";
+import { LogoMark } from "./Icons";
 
 export function LoginScreen() {
   const login = useAuth((s) => s.login);
@@ -35,8 +36,10 @@ export function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.box}>
-        <Image source={require("../../assets/macrofactor.png")} style={styles.logo} />
-        <Text style={styles.title}>Chat MacroFactor</Text>
+        <View style={styles.logo}>
+          <LogoMark size={40} color={colors.accent} />
+        </View>
+        <Text style={styles.title}>{APP_NAME}</Text>
         <Text style={styles.subtitle}>Introduce la contraseña de la app</Text>
 
         <TextInput
@@ -77,7 +80,15 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   box: { width: "100%", maxWidth: 360, alignItems: "center" },
-  logo: { width: 64, height: 64, borderRadius: 16, marginBottom: 16 },
+  logo: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    marginBottom: 16,
+    backgroundColor: colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   title: { color: colors.text, fontSize: 22, fontWeight: "700" },
   subtitle: { color: colors.textMuted, fontSize: 14, marginTop: 6, marginBottom: 24 },
   input: {

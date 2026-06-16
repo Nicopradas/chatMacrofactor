@@ -12,7 +12,10 @@ export const API_BASE =
 export const apiUrl = (path: string) =>
   `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 
-/** Nombre EXACTO del atajo de Apple Shortcuts que registra en MacroFactor. */
+/** Nombre visible de la app (neutro; cámbialo aquí cuando definas la marca). */
+export const APP_NAME = "Calorías";
+
+/** Nombre EXACTO del atajo de Apple Shortcuts usado para registrar la comida. */
 export const MF_SHORTCUT_NAME =
   (process.env.EXPO_PUBLIC_MF_SHORTCUT_NAME as string | undefined) ||
   "Log Chat MacroFactor";

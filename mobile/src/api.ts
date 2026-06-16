@@ -1,39 +1,45 @@
+import * as FileSystem from "expo-file-system/legacy";
 import { authHeaders } from "./auth";
 import { apiUrl } from "./config";
 
-/** Sube una imagen local (uri de expo-image-picker/manipulator) y devuelve su URL pública. */
+// En React Native, el `FormData` de JS con ficheros ({ uri }) falla en el módulo
+// de red nativo ("Unsupported FormData part implementation"). La vía fiable es la
+// subida multipart NATIVA de expo-file-system (`uploadAsync`).
+
+/** Sube una imagen local y devuelve su URL pública (Vercel Blob). */
 export async function uploadImage(uri: string, name: string): Promise<string> {
-  const form = new FormData();
-  // RN: un fichero en FormData es { uri, name, type }.
-  form.append("image", { uri, name, type: "image/jpeg" } as unknown as Blob);
-  form.append("filename", name);
-  const res = await fetch(apiUrl("/api/blob/upload-direct"), {
-    method: "POST",
+  const res = await FileSystem.uploadAsync(apiUrl("/api/blob/upload-direct"), uri, {
+    httpMethod: "POST",
+    uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+    fieldName: "image",
+    mimeType: "image/jpeg",
+    parameters: { filename: name },
     headers: authHeaders(),
-    body: form,
   });
-  if (!res.ok) {
-    const msg = await res.text().catch(() => "");
-    throw new Error(`upload ${res.status}: ${msg}`);
+  if (res.status < 200 || res.status >= 300) {
+    throw new Error(`upload ${res.status}: ${res.body}`);
   }
-  const data = (await res.json()) as { url: string };
+  const data = JSON.parse(res.body) as { url: string };
   return data.url;
 }
 
 /** Envía un audio grabado a Whisper (vía backend) y devuelve la transcripción. */
 export async function transcribeAudio(uri: string): Promise<string> {
-  const form = new FormData();
-  form.append("audio", {
-    uri,
-    name: "audio.m4a",
-    type: "audio/m4a",
-  } as unknown as Blob);
-  const res = await fetch(apiUrl("/api/transcribe"), {
-    method: "POST",
+  const res = await FileSystem.uploadAsync(apiUrl("/api/transcribe"), uri, {
+    httpMethod: "POST",
+    uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+    fieldName: "audio",
+    mimeType: "audio/m4a",
     headers: authHeaders(),
-    body: form,
   });
-  const data = (await res.json()) as { text?: string; error?: string };
-  if (!res.ok || data.error) throw new Error(data.error || `transcribe ${res.status}`);
+  let data: { text?: string; error?: string } = {};
+  try {
+    data = JSON.parse(res.body);
+  } catch {
+    /* respuesta no-JSON */
+  }
+  if (res.status < 200 || res.status >= 300 || data.error) {
+    throw new Error(data.error || `transcribe ${res.status}`);
+  }
   return data.text ?? "";
 }
